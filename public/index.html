@@ -297,6 +297,11 @@
 <script>
 (function(){
   const MAX_MARKS = 20, SCALE = 0.6, LOCKOUT = 650;
+  // 저장은 최근 KEEP개만. 차트와 평균에만 쓰이므로 그 이상은 의미가 없고,
+  // 무한히 쌓이면 localStorage 용량을 잠식한다. 누적 시도 횟수와 최고
+  // 기록은 잘려도 남아야 하므로 따로 센다.
+  const STORE_KEY = 'timing-game/v1', KEEP = 500;
+
   const $ = id => document.getElementById(id);
   const el = {
     target:$('target'), live:$('live'), verdict:$('verdict'), pad:$('pad'),
@@ -305,10 +310,36 @@
     showTimer:$('show-timer'), reset:$('reset')
   };
 
-  let target = 0, startedAt = 0, state = 'idle', raf = 0, results = [], streak = 0;
+  let target = 0, startedAt = 0, state = 'idle', raf = 0;
+  let results = [], streak = 0, total = 0, best = null;
 
   const fmt = n => n.toFixed(3);
 
+  // ── 저장 ────────────────────────────────
+  // 사파리 프라이빗 모드나 저장 공간이 꽉 찬 브라우저는 여기서 예외를
+  // 던진다. 기록을 못 남기더라도 게임 자체는 계속돼야 한다.
+  function save(){
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        v:1, results:results.slice(-KEEP), streak, total, best,
+        showTimer: el.showTimer.checked
+      }));
+    } catch (e) { /* 저장 못 해도 진행 */ }
+  }
+
+  function load(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+      if (!saved || saved.v !== 1 || !Array.isArray(saved.results)) return;
+      results = saved.results.filter(n => typeof n === 'number' && isFinite(n)).slice(-KEEP);
+      streak  = Number.isFinite(saved.streak) ? saved.streak : 0;
+      total   = Number.isFinite(saved.total)  ? saved.total  : results.length;
+      best    = Number.isFinite(saved.best)   ? saved.best   : null;
+      el.showTimer.checked = !!saved.showTimer;
+    } catch (e) { /* 손상된 기록은 버리고 새로 시작 */ }
+  }
+
+  // ── 게임 ────────────────────────────────
   function newTarget(){
     let t;
     do { t = (Math.round(Math.random()*79) + 20) / 10; } while (t === target);
@@ -368,7 +399,11 @@
       '<div class="grade" style="color:' + g.color + '">' + g.name + '</div>';
 
     results.push(err);
+    if (results.length > KEEP) results = results.slice(-KEEP);
+    total += 1;
+    if (best === null || abs < best) best = abs;
     streak = abs <= 0.100 ? streak + 1 : 0;
+    save();
     draw();
     render();
 
@@ -409,21 +444,20 @@
   }
 
   function render(){
-    const n = results.length;
-    el.count.textContent = n;
+    el.count.textContent = total;
     el.streak.textContent = streak;
 
-    if (!n){
+    if (!results.length){
       el.best.textContent = el.avg.textContent = '—';
       el.bias.textContent = '';
       return;
     }
     const abs = results.map(Math.abs);
-    el.best.textContent = fmt(Math.min.apply(null, abs));
-    el.avg.textContent  = fmt(abs.reduce((a,b)=>a+b,0) / n);
+    el.best.textContent = best === null ? '—' : fmt(best);
+    el.avg.textContent  = fmt(abs.reduce((a,b)=>a+b,0) / abs.length);
 
-    const mean = results.reduce((a,b)=>a+b,0) / n;
-    el.bias.textContent = n < 3 ? ''
+    const mean = results.reduce((a,b)=>a+b,0) / results.length;
+    el.bias.textContent = results.length < 3 ? ''
       : Math.abs(mean) < 0.02 ? '편향 없이 고르게 누릅니다'
       : '평균 ' + Math.abs(mean).toFixed(2) + '초 ' + (mean > 0 ? '늦게' : '빠르게') + ' 누릅니다';
   }
@@ -442,16 +476,21 @@
     press();
   });
 
+  el.showTimer.addEventListener('change', save);
+
   el.reset.addEventListener('click', function(){
-    results = []; streak = 0;
+    results = []; streak = 0; total = 0; best = null;
     cancelAnimationFrame(raf);
+    try { localStorage.removeItem(STORE_KEY); } catch (e) { /* 무시 */ }
     draw(); render();
     newTarget();
     toIdle('스페이스를 눌러 시작');
     el.pad.focus();
   });
 
+  load();
   newTarget();
+  draw();
   render();
 })();
 </script>
