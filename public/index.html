@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정밀 타이밍 측정기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --desk:#191A1E;
+    --desk-2:#232429;
+    --paper:#FCF8F5;
+    --grid-fine:#F4D2C8;
+    --grid-bold:#E5A091;
+    --ink:#17120F;
+    --ink-soft:#7C716B;
+    --pen-good:#0F7A6B;
+    --pen-bad:#BE3A29;
+    --edge:#E4D8D1;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  html,body{height:100%}
+
+  body{
+    background:
+      radial-gradient(120% 90% at 50% 0%, var(--desk-2) 0%, var(--desk) 62%);
+    color:var(--ink);
+    font-family:"IBM Plex Sans KR", system-ui, sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px;
+  }
+
+  .machine{
+    width:100%;
+    max-width:720px;
+    background:var(--paper);
+    border-radius:4px;
+    box-shadow:0 1px 0 rgba(255,255,255,.06), 0 28px 60px -20px rgba(0,0,0,.7);
+    overflow:hidden;
+  }
+
+  /* ── head ─────────────────────────────── */
+  .head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:12px;
+    padding:16px 22px 12px;
+    border-bottom:1px solid var(--edge);
+  }
+  .eyebrow{
+    font-family:"Azeret Mono", monospace;
+    font-size:10px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .rec{
+    display:flex; align-items:center; gap:7px;
+    font-family:"Azeret Mono", monospace;
+    font-size:10px; letter-spacing:.18em;
+    color:var(--ink-soft);
+  }
+  .rec .bulb{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--edge);
+  }
+  .rec.live{color:var(--pen-bad)}
+  .rec.live .bulb{background:var(--pen-bad);animation:blink .9s steps(2,end) infinite}
+  @keyframes blink{50%{opacity:.15}}
+
+  /* ── readout ──────────────────────────── */
+  .readout{padding:26px 22px 22px;text-align:center}
+  .kicker{
+    font-family:"Azeret Mono", monospace;
+    font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .target{
+    font-family:"Azeret Mono", monospace;
+    font-weight:700;
+    font-size:clamp(58px,17vw,104px);
+    line-height:.92;
+    letter-spacing:-.04em;
+    margin-top:10px;
+    font-variant-numeric:tabular-nums;
+  }
+  .target .unit{
+    font-family:"IBM Plex Sans KR",sans-serif;
+    font-weight:500;
+    font-size:.24em;
+    letter-spacing:0;
+    margin-left:.12em;
+    color:var(--ink-soft);
+  }
+  .live{
+    font-family:"Azeret Mono", monospace;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    min-height:19px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .verdict{
+    margin-top:14px;
+    min-height:44px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+  }
+  .error{
+    font-family:"Azeret Mono", monospace;
+    font-size:20px;font-weight:500;
+    font-variant-numeric:tabular-nums;
+  }
+  .grade{
+    font-size:11px;letter-spacing:.14em;
+    padding:3px 10px;border-radius:999px;
+    border:1px solid currentColor;
+  }
+  .hint{font-size:13px;color:var(--ink-soft)}
+
+  /* ── pad ──────────────────────────────── */
+  .pad{
+    display:block;width:calc(100% - 44px);margin:4px 22px 20px;
+    padding:15px;
+    background:var(--ink);color:var(--paper);
+    border:none;border-radius:3px;cursor:pointer;
+    font-family:"Azeret Mono", monospace;
+    font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    transition:background .12s ease, transform .06s ease;
+  }
+  .pad:hover{background:#2C2320}
+  .pad:active{transform:translateY(1px)}
+  .pad:focus-visible{outline:2px solid var(--pen-bad);outline-offset:3px}
+  .pad[disabled]{background:var(--edge);color:var(--ink-soft);cursor:default}
+
+  /* ── chart strip ──────────────────────── */
+  .strip-wrap{border-top:1px solid var(--edge);border-bottom:1px solid var(--edge)}
+  .strip-head{
+    display:flex;justify-content:space-between;
+    padding:9px 22px 0;
+    font-family:"Azeret Mono", monospace;
+    font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .strip{
+    position:relative;height:168px;margin:8px 22px 14px;
+    background-color:#FFFBF9;
+    background-image:
+      repeating-linear-gradient(to right, var(--grid-fine) 0 1px, transparent 1px 12px),
+      repeating-linear-gradient(to bottom, var(--grid-fine) 0 1px, transparent 1px 12px),
+      repeating-linear-gradient(to right, var(--grid-bold) 0 1px, transparent 1px 60px),
+      repeating-linear-gradient(to bottom, var(--grid-bold) 0 1px, transparent 1px 60px);
+    border:1px solid var(--grid-bold);
+    overflow:hidden;
+  }
+  .axis{
+    position:absolute;left:0;right:0;top:50%;
+    border-top:1.5px dashed rgba(23,18,15,.45);
+  }
+  .side{
+    position:absolute;left:6px;
+    font-family:"Azeret Mono", monospace;
+    font-size:9px;letter-spacing:.14em;color:var(--ink-soft);
+  }
+  .side.up{top:6px}
+  .side.down{bottom:6px}
+  .empty{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:12px;color:var(--ink-soft);
+  }
+  .mark{position:absolute;top:0;bottom:0;width:0}
+  .stem{
+    position:absolute;left:-1px;width:2px;background:var(--ink);opacity:.72;
+  }
+  .dot{
+    position:absolute;left:-4px;width:8px;height:8px;border-radius:50%;
+    background:var(--ink);
+  }
+  .mark.good .stem,.mark.good .dot{background:var(--pen-good)}
+  .mark.bad .stem,.mark.bad .dot{background:var(--pen-bad)}
+  .mark.fresh .dot{animation:stamp .28s cubic-bezier(.2,1.5,.4,1)}
+  @keyframes stamp{from{transform:scale(2.4);opacity:.2}to{transform:scale(1);opacity:1}}
+
+  /* ── stats ────────────────────────────── */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr)}
+  .cell{padding:14px 10px;text-align:center;border-left:1px solid var(--edge)}
+  .cell:first-child{border-left:none}
+  .cell .k{
+    font-family:"Azeret Mono",monospace;font-size:9px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  .cell .v{
+    font-family:"Azeret Mono",monospace;font-size:19px;font-weight:500;margin-top:5px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .foot{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:11px 22px;border-top:1px solid var(--edge);
+    font-size:12px;color:var(--ink-soft);
+  }
+  .foot label{display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
+  .foot input{accent-color:var(--ink);cursor:pointer}
+  .reset{
+    background:none;border:none;cursor:pointer;color:var(--ink-soft);
+    font-family:"Azeret Mono",monospace;font-size:10px;letter-spacing:.16em;
+    text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;
+  }
+  .reset:hover{color:var(--ink)}
+  .bias{flex:1;text-align:center;font-size:11.5px}
+
+  @media (max-width:520px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .cell:nth-child(3){border-left:none}
+    .cell:nth-child(n+3){border-top:1px solid var(--edge)}
+    .strip{height:134px}
+    .foot{flex-wrap:wrap;justify-content:center}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<main class="machine">
+  <div class="head">
+    <span class="eyebrow">정밀 타이밍 측정기</span>
+    <span class="rec" id="rec"><span class="bulb"></span>REC</span>
+  </div>
+
+  <section class="readout">
+    <div class="kicker">목표 시간</div>
+    <div class="target" id="target">—<span class="unit">초</span></div>
+    <div class="live" id="live"></div>
+    <div class="verdict" id="verdict">
+      <div class="hint">스페이스를 눌러 시작하세요</div>
+    </div>
+  </section>
+
+  <button class="pad" id="pad">시작</button>
+
+  <div class="strip-wrap">
+    <div class="strip-head"><span>측정 기록</span><span>오차 ±0.6초</span></div>
+    <div class="strip" id="strip">
+      <div class="side up">빠름</div>
+      <div class="axis"></div>
+      <div class="side down">늦음</div>
+      <div class="empty" id="empty">첫 기록이 여기에 남습니다</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="cell"><div class="k">시도</div><div class="v" id="s-count">0</div></div>
+    <div class="cell"><div class="k">최고 정확도</div><div class="v" id="s-best">—</div></div>
+    <div class="cell"><div class="k">평균 오차</div><div class="v" id="s-avg">—</div></div>
+    <div class="cell"><div class="k">연속 적중</div><div class="v" id="s-streak">0</div></div>
+  </div>
+
+  <div class="foot">
+    <label><input type="checkbox" id="show-timer">측정 중 시간 표시</label>
+    <span class="bias" id="bias"></span>
+    <button class="reset" id="reset">기록 지우기</button>
+  </div>
+</main>
+
+<script>
+(function(){
+  const MAX_MARKS = 20, SCALE = 0.6, LOCKOUT = 650;
+  const $ = id => document.getElementById(id);
+  const el = {
+    target:$('target'), live:$('live'), verdict:$('verdict'), pad:$('pad'),
+    rec:$('rec'), strip:$('strip'), empty:$('empty'), bias:$('bias'),
+    count:$('s-count'), best:$('s-best'), avg:$('s-avg'), streak:$('s-streak'),
+    showTimer:$('show-timer'), reset:$('reset')
+  };
+
+  let target = 0, startedAt = 0, state = 'idle', raf = 0, results = [], streak = 0;
+
+  const fmt = n => n.toFixed(3);
+
+  function newTarget(){
+    let t;
+    do { t = (Math.round(Math.random()*79) + 20) / 10; } while (t === target);
+    target = t;
+    el.target.innerHTML = target.toFixed(2) + '<span class="unit">초</span>';
+  }
+
+  function grade(abs){
+    if (abs <= 0.030) return {name:'완벽',  color:'var(--pen-good)', pen:'good'};
+    if (abs <= 0.100) return {name:'정밀',  color:'var(--ink)',      pen:''};
+    if (abs <= 0.250) return {name:'근접',  color:'var(--ink-soft)', pen:''};
+    if (abs <= 0.500) return {name:'빗나감',color:'var(--ink-soft)', pen:''};
+    return {name:'실패', color:'var(--pen-bad)', pen:'bad'};
+  }
+
+  function toIdle(msg){
+    state = 'idle';
+    el.pad.disabled = false;
+    el.pad.textContent = '시작';
+    el.rec.classList.remove('live');
+    el.live.textContent = '';
+    if (msg) el.verdict.innerHTML = '<div class="hint">' + msg + '</div>';
+  }
+
+  function start(){
+    state = 'running';
+    startedAt = performance.now();
+    el.pad.textContent = '정지';
+    el.rec.classList.add('live');
+    el.verdict.innerHTML = '<div class="hint">스페이스를 다시 눌러 정지</div>';
+    tick();
+  }
+
+  function tick(){
+    if (state !== 'running') return;
+    el.live.textContent = el.showTimer.checked
+      ? fmt((performance.now() - startedAt)/1000) + ' 초'
+      : '측정 중';
+    raf = requestAnimationFrame(tick);
+  }
+
+  function stop(){
+    const elapsed = (performance.now() - startedAt)/1000;
+    cancelAnimationFrame(raf);
+    state = 'locked';
+    el.rec.classList.remove('live');
+    el.pad.disabled = true;
+    el.pad.textContent = '다음 목표';
+    el.live.textContent = fmt(elapsed) + ' 초 기록됨';
+
+    const err = elapsed - target, abs = Math.abs(err), g = grade(abs);
+    const dir = abs < 0.0005 ? '정확' : (err > 0 ? '늦음' : '빠름');
+    el.verdict.innerHTML =
+      '<div class="error" style="color:' + g.color + '">' +
+        (err >= 0 ? '+' : '−') + fmt(abs) + '초 ' + dir +
+      '</div>' +
+      '<div class="grade" style="color:' + g.color + '">' + g.name + '</div>';
+
+    results.push(err);
+    streak = abs <= 0.100 ? streak + 1 : 0;
+    draw();
+    render();
+
+    setTimeout(function(){
+      if (state !== 'locked') return;
+      newTarget();
+      toIdle('스페이스를 눌러 시작');
+    }, LOCKOUT);
+  }
+
+  function draw(){
+    el.strip.querySelectorAll('.mark').forEach(n => n.remove());
+    const shown = results.slice(-MAX_MARKS);
+    el.empty.style.display = shown.length ? 'none' : 'flex';
+
+    shown.forEach(function(err, i){
+      const x = (i + 0.5) / MAX_MARKS * 100;
+      const clamped = Math.max(-SCALE, Math.min(SCALE, err));
+      const y = 50 + (clamped / SCALE) * 46;   // 늦으면 아래로
+      const abs = Math.abs(err), g = grade(abs);
+
+      const mark = document.createElement('div');
+      mark.className = 'mark ' + g.pen + (i === shown.length - 1 ? ' fresh' : '');
+      mark.style.left = x + '%';
+
+      const stem = document.createElement('div');
+      stem.className = 'stem';
+      stem.style.top    = Math.min(50, y) + '%';
+      stem.style.height = Math.abs(y - 50) + '%';
+
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.top = 'calc(' + y + '% - 4px)';
+
+      mark.append(stem, dot);
+      el.strip.appendChild(mark);
+    });
+  }
+
+  function render(){
+    const n = results.length;
+    el.count.textContent = n;
+    el.streak.textContent = streak;
+
+    if (!n){
+      el.best.textContent = el.avg.textContent = '—';
+      el.bias.textContent = '';
+      return;
+    }
+    const abs = results.map(Math.abs);
+    el.best.textContent = fmt(Math.min.apply(null, abs));
+    el.avg.textContent  = fmt(abs.reduce((a,b)=>a+b,0) / n);
+
+    const mean = results.reduce((a,b)=>a+b,0) / n;
+    el.bias.textContent = n < 3 ? ''
+      : Math.abs(mean) < 0.02 ? '편향 없이 고르게 누릅니다'
+      : '평균 ' + Math.abs(mean).toFixed(2) + '초 ' + (mean > 0 ? '늦게' : '빠르게') + ' 누릅니다';
+  }
+
+  function press(){
+    if (state === 'idle') start();
+    else if (state === 'running') stop();
+  }
+
+  el.pad.addEventListener('click', press);
+
+  document.addEventListener('keydown', function(e){
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    e.preventDefault();
+    if (e.repeat) return;
+    press();
+  });
+
+  el.reset.addEventListener('click', function(){
+    results = []; streak = 0;
+    cancelAnimationFrame(raf);
+    draw(); render();
+    newTarget();
+    toIdle('스페이스를 눌러 시작');
+    el.pad.focus();
+  });
+
+  newTarget();
+  render();
+})();
+</script>
+</body>
+</html>
