@@ -4,10 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>정밀 타이밍 측정기</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* 폰트는 직접 호스팅한다. CDN을 쓰면 첫 렌더가 외부 왕복만큼 늦어지고
+     방문자 IP가 그쪽으로 넘어간다. 페이지에 실제로 쓰는 글자만 남겨서
+     한글 폰트도 수십 KB로 줄였다(tools/build_fonts.py). 둘 다 OFL이며
+     라이선스는 fonts/OFL-*.txt에 함께 배포한다. */
+  @font-face{
+    font-family:"Azeret Mono";
+    src:url("fonts/AzeretMono-var.woff2") format("woff2");
+    font-weight:100 900;      /* 가변 폰트 — 파일 하나로 400/500/700 */
+    font-style:normal;
+    font-display:swap;
+  }
+  @font-face{
+    font-family:"IBM Plex Sans KR";
+    src:url("fonts/IBMPlexSansKR-Regular.woff2") format("woff2");
+    font-weight:400; font-style:normal; font-display:swap;
+  }
+  @font-face{
+    font-family:"IBM Plex Sans KR";
+    src:url("fonts/IBMPlexSansKR-Medium.woff2") format("woff2");
+    font-weight:500; font-style:normal; font-display:swap;
+  }
+  @font-face{
+    font-family:"IBM Plex Sans KR";
+    src:url("fonts/IBMPlexSansKR-SemiBold.woff2") format("woff2");
+    font-weight:600; font-style:normal; font-display:swap;
+  }
+
   :root{
     --desk:#191A1E;
     --desk-2:#232429;
