@@ -1,0 +1,15 @@
+# Cloudflare Workers 정적 자산의 기본값은 max-age=0, must-revalidate라
+# 재방문마다 폰트 4개를 재검증한다. 304로 끝나도 왕복은 그대로 든다.
+#
+# 폰트 파일명에는 내용 해시가 들어 있다(tools/build_fonts.py). 내용이 바뀌면
+# URL이 바뀌므로 영구 캐시가 안전하다. immutable은 새로고침해도 재검증하지
+# 않게 한다.
+/fonts/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML은 항상 최신이어야 한다. 여기서 새 폰트 URL을 알려주기 때문에
+# 이것까지 캐시되면 해시를 붙인 의미가 없어진다.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/
+  Cache-Control: public, max-age=0, must-revalidate
