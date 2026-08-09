@@ -262,6 +262,32 @@
   .reset:hover,.lang:hover{color:var(--ink)}
   .bias{flex:1;text-align:center;font-size:11.5px}
 
+  /* 큰 화면에서는 카드가 검은 바탕 한가운데 뜬 우표처럼 보인다. 계측기라는
+     인상을 주려면 어느 정도 덩치가 필요하다. 뷰포트 폭만 보면 짧고 넓은
+     화면에서 세로가 넘치므로 높이도 함께 조건에 넣는다. */
+  @media (min-width:1100px) and (min-height:760px){
+    .machine{max-width:900px}
+    .target{font-size:132px}
+    .head{padding:20px 30px 15px}
+    .eyebrow,.rec{font-size:12px}
+    .readout{padding:36px 30px 28px}
+    .kicker{font-size:12px}
+    .live{font-size:15px}
+    .hint{font-size:15px}
+    .error{font-size:25px}
+    .grade{font-size:13px}
+    .pad{width:calc(100% - 60px);margin:6px 30px 26px;padding:19px;font-size:14px}
+    .strip-head{padding:12px 30px 0;font-size:11px}
+    .strip{height:230px;margin:10px 30px 18px}
+    .side{font-size:11px;left:8px}
+    .empty{font-size:14px}
+    .cell{padding:18px 12px}
+    .cell .k{font-size:10.5px}
+    .cell .v{font-size:24px}
+    .foot{padding:14px 30px;font-size:13.5px}
+    .bias{font-size:13px}
+  }
+
   @media (max-width:520px){
     .stats{grid-template-columns:repeat(2,1fr)}
     .cell:nth-child(3){border-left:none}
@@ -321,6 +347,9 @@
 <script>
 (function(){
   const MAX_MARKS = 20, SCALE = 0.6, LOCKOUT = 650;
+  // 마크를 왼쪽 끝부터 그리면, 오차가 커서 기둥이 천장까지 닿을 때
+  // Early/Late 라벨을 뚫고 지나간다. 실제 기록계처럼 왼쪽에 여백을 둔다.
+  const MARK_GUTTER = 8;   // %
   // 저장은 최근 KEEP개만. 차트와 평균에만 쓰이므로 그 이상은 의미가 없고,
   // 무한히 쌓이면 localStorage 용량을 잠식한다. 누적 시도 횟수와 최고
   // 기록은 잘려도 남아야 하므로 따로 센다.
@@ -549,7 +578,7 @@
     el.empty.style.display = shown.length ? 'none' : 'flex';
 
     shown.forEach(function(err, i){
-      const x = (i + 0.5) / MAX_MARKS * 100;
+      const x = MARK_GUTTER + (i + 0.5) / MAX_MARKS * (100 - MARK_GUTTER);
       const clamped = Math.max(-SCALE, Math.min(SCALE, err));
       const y = 50 + (clamped / SCALE) * 46;   // 늦으면 아래로
       const style = GRADE_STYLE[gradeIndex(Math.abs(err))];
