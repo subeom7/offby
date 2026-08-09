@@ -26,10 +26,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install fonttools brotli
-      - name: 폰트가 최신인지 확인
+      - run: pip install fonttools brotli pillow numpy
+      - name: 폰트와 og:image가 최신인지 확인
         run: |
           python tools/build_fonts.py
+          python tools/build_og.py
           if ! git diff --quiet -- public; then
             echo "::error::index.html의 문구가 바뀌었는데 폰트를 다시 만들지 않았습니다. 'npm run fonts' 후 커밋하세요."
             git diff --stat -- public
