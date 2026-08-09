@@ -1,0 +1,16 @@
+{
+  // Cloudflare Workers 정적 자산 배포.
+  //
+  // main(워커 스크립트)이 없으면 자산만 서빙하는 워커가 된다. 지금은 그게
+  // 전부라 코드가 한 줄도 필요 없다. 나중에 리더보드 같은 API가 필요해지면
+  // main을 추가하고 /api/* 만 코드로 처리하면 된다 — 정적 자산은 그대로
+  // 엣지에서 나가고 API 요청만 워커를 탄다.
+  //
+  // Pages 대신 Workers를 쓰는 이유: Cloudflare가 둘을 Workers로 통합하는
+  // 중이고, 위처럼 나중에 API를 붙일 때 구조를 바꿀 필요가 없다.
+  "name": "timing-game",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./public"
+  }
+}

@@ -87,12 +87,22 @@ test/
 
 ## 배포
 
-Cloudflare Pages에 저장소를 연결한다.
+Cloudflare Workers에 저장소를 연결한다. 설정은 `wrangler.jsonc`가 들고 있다.
 
 | 설정 | 값 |
 |---|---|
-| Framework preset | None |
-| Build command | (비움) |
-| Build output directory | `public` |
+| Build command | `npm ci` |
+| Deploy command | `npx wrangler deploy` |
 
 `main`에 push하면 배포된다.
+
+Pages가 아니라 Workers인 이유가 두 가지다. Cloudflare가 둘을 Workers로
+통합하는 중이고, 나중에 리더보드 같은 API가 필요해지면 `wrangler.jsonc`에
+`main`만 추가해서 `/api/*`를 처리하면 되기 때문이다 — 정적 자산은 그대로
+엣지에서 나가고 API 요청만 워커를 탄다. Pages였다면 구조를 바꿔야 한다.
+
+`main`이 없는 지금은 자산만 서빙하는 워커라 코드가 한 줄도 없다.
+
+wrangler 4는 Node 22 이상을 요구한다. `.node-version`으로 빌드 환경에
+고정해 뒀다. 로컬 Node가 20이면 `npm test`는 되지만 `npx wrangler`는 안 된다
+— 배포는 Cloudflare가 하므로 문제되지 않는다.
