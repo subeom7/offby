@@ -1,41 +1,58 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>정밀 타이밍 측정기</title>
-<meta name="description" content="목표 시간을 눈대중으로 맞춰 보세요. 얼마나 빠르게, 혹은 늦게 누르는지 기록으로 남습니다.">
+<title>offby — precision timer</title>
+<meta name="description" content="A target time appears. Start, then stop when you think it has passed. Find out how far off you are, and which way you lean.">
 <meta name="theme-color" content="#191A1E">
 <meta property="og:type" content="website">
-<meta property="og:title" content="정밀 타이밍 측정기">
-<meta property="og:description" content="목표 시간을 눈대중으로 맞춰 보세요. 얼마나 빠르게, 혹은 늦게 누르는지 기록으로 남습니다.">
+<meta property="og:title" content="offby — precision timer">
+<meta property="og:description" content="A target time appears. Start, then stop when you think it has passed. Find out how far off you are, and which way you lean.">
+<meta property="og:url" content="https://offby.dev/">
+<meta property="og:image" content="https://offby.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://offby.dev/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23FCF8F5'/><circle cx='16' cy='16' r='9' fill='none' stroke='%2317120F' stroke-width='2.5'/><path d='M16 10v6.5l4 2.5' stroke='%23BE3A29' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>">
 <style>
   /* 폰트는 직접 호스팅한다. CDN을 쓰면 첫 렌더가 외부 왕복만큼 늦어지고
-     방문자 IP가 그쪽으로 넘어간다. 페이지에 실제로 쓰는 글자만 남겨서
-     한글 폰트도 수십 KB로 줄였다(tools/build_fonts.py). 둘 다 OFL이며
-     라이선스는 fonts/OFL-*.txt에 함께 배포한다. */
+     방문자 IP가 그쪽으로 넘어간다.
+
+     문자 체계별로 나눈 게 핵심이다. 기본 언어가 영어라 대부분의 방문자는
+     한글을 한 글자도 그리지 않는다. 그런데 한 폰트가 라틴과 한글을 모두
+     담고 있으면 영어만 표시해도 브라우저가 그 파일을 받아 온다.
+     같은 family에 unicode-range를 달아 두면 브라우저가 글자마다 맞는
+     파일만 받는다 — 영어 사용자는 한글 폰트를 아예 받지 않는다. */
   @font-face{
     font-family:"Azeret Mono";
-    src:url("fonts/AzeretMono-var.810ec9ed.woff2") format("woff2");
-    font-weight:100 900;      /* 가변 폰트 — 파일 하나로 400/500/700 */
-    font-style:normal;
-    font-display:swap;
+    src:url("fonts/AzeretMono-var.ad4284a3.woff2") format("woff2");
+    font-weight:100 900; font-display:swap;
   }
   @font-face{
-    font-family:"IBM Plex Sans KR";
-    src:url("fonts/IBMPlexSansKR-Regular.81b065d9.woff2") format("woff2");
-    font-weight:400; font-style:normal; font-display:swap;
+    font-family:"Plex";
+    src:url("fonts/IBMPlexSans-var.63777163.woff2") format("woff2");
+    font-weight:100 900; font-display:swap;
+  }
+  /* 아래 셋은 한글을 그릴 때만 받아 간다 */
+  @font-face{
+    font-family:"Plex";
+    src:url("fonts/IBMPlexSansKR-Regular.04e26dce.woff2") format("woff2");
+    font-weight:400; font-display:swap;
+    unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
   @font-face{
-    font-family:"IBM Plex Sans KR";
-    src:url("fonts/IBMPlexSansKR-Medium.87e458e3.woff2") format("woff2");
-    font-weight:500; font-style:normal; font-display:swap;
+    font-family:"Plex";
+    src:url("fonts/IBMPlexSansKR-Medium.0e85dee8.woff2") format("woff2");
+    font-weight:500; font-display:swap;
+    unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
   @font-face{
-    font-family:"IBM Plex Sans KR";
-    src:url("fonts/IBMPlexSansKR-SemiBold.797101f5.woff2") format("woff2");
-    font-weight:600; font-style:normal; font-display:swap;
+    font-family:"Plex";
+    src:url("fonts/IBMPlexSansKR-SemiBold.2de8ea89.woff2") format("woff2");
+    font-weight:600; font-display:swap;
+    unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
 
   :root{
@@ -59,7 +76,7 @@
     background:
       radial-gradient(120% 90% at 50% 0%, var(--desk-2) 0%, var(--desk) 62%);
     color:var(--ink);
-    font-family:"IBM Plex Sans KR", system-ui, sans-serif;
+    font-family:"Plex", system-ui, sans-serif;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -122,7 +139,7 @@
     font-variant-numeric:tabular-nums;
   }
   .target .unit{
-    font-family:"IBM Plex Sans KR",sans-serif;
+    font-family:"Plex",sans-serif;
     font-weight:500;
     font-size:.24em;
     letter-spacing:0;
@@ -237,12 +254,12 @@
   }
   .foot label{display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
   .foot input{accent-color:var(--ink);cursor:pointer}
-  .reset{
+  .reset,.lang{
     background:none;border:none;cursor:pointer;color:var(--ink-soft);
     font-family:"Azeret Mono",monospace;font-size:10px;letter-spacing:.16em;
     text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;
   }
-  .reset:hover{color:var(--ink)}
+  .reset:hover,.lang:hover{color:var(--ink)}
   .bias{flex:1;text-align:center;font-size:11.5px}
 
   @media (max-width:520px){
@@ -261,42 +278,43 @@
 
 <main class="machine">
   <div class="head">
-    <span class="eyebrow">정밀 타이밍 측정기</span>
+    <span class="eyebrow" id="t-instrument">Precision timer</span>
     <span class="rec" id="rec"><span class="bulb"></span>REC</span>
   </div>
 
   <section class="readout">
-    <div class="kicker">목표 시간</div>
-    <div class="target" id="target">—<span class="unit">초</span></div>
+    <div class="kicker" id="t-kicker">Target time</div>
+    <div class="target" id="target">—<span class="unit" id="t-unit">s</span></div>
     <div class="live" id="live"></div>
-    <div class="verdict" id="verdict">
-      <div class="hint">스페이스를 눌러 시작하세요</div>
-    </div>
+    <div class="verdict" id="verdict"></div>
   </section>
 
-  <button class="pad" id="pad">시작</button>
+  <button class="pad" id="pad">Start</button>
 
   <div class="strip-wrap">
-    <div class="strip-head"><span>측정 기록</span><span>오차 ±0.6초</span></div>
+    <div class="strip-head">
+      <span id="t-log">Log</span><span id="t-scale">Error 0.6s</span>
+    </div>
     <div class="strip" id="strip">
-      <div class="side up">빠름</div>
+      <div class="side up" id="t-early">Early</div>
       <div class="axis"></div>
-      <div class="side down">늦음</div>
-      <div class="empty" id="empty">첫 기록이 여기에 남습니다</div>
+      <div class="side down" id="t-late">Late</div>
+      <div class="empty" id="empty">Your first attempt shows up here</div>
     </div>
   </div>
 
   <div class="stats">
-    <div class="cell"><div class="k">시도</div><div class="v" id="s-count">0</div></div>
-    <div class="cell"><div class="k">최고 정확도</div><div class="v" id="s-best">—</div></div>
-    <div class="cell"><div class="k">평균 오차</div><div class="v" id="s-avg">—</div></div>
-    <div class="cell"><div class="k">연속 적중</div><div class="v" id="s-streak">0</div></div>
+    <div class="cell"><div class="k" id="t-attempts">Attempts</div><div class="v" id="s-count">0</div></div>
+    <div class="cell"><div class="k" id="t-best">Best</div><div class="v" id="s-best">—</div></div>
+    <div class="cell"><div class="k" id="t-avg">Avg error</div><div class="v" id="s-avg">—</div></div>
+    <div class="cell"><div class="k" id="t-streak">Streak</div><div class="v" id="s-streak">0</div></div>
   </div>
 
   <div class="foot">
-    <label><input type="checkbox" id="show-timer">측정 중 시간 표시</label>
+    <label><input type="checkbox" id="show-timer"><span id="t-showTimer">Show timer while measuring</span></label>
     <span class="bias" id="bias"></span>
-    <button class="reset" id="reset">기록 지우기</button>
+    <button class="lang" id="lang">한국어</button>
+    <button class="reset" id="reset">Clear</button>
   </div>
 </main>
 
@@ -306,18 +324,69 @@
   // 저장은 최근 KEEP개만. 차트와 평균에만 쓰이므로 그 이상은 의미가 없고,
   // 무한히 쌓이면 localStorage 용량을 잠식한다. 누적 시도 횟수와 최고
   // 기록은 잘려도 남아야 하므로 따로 센다.
-  const STORE_KEY = 'timing-game/v1', KEEP = 500;
+  const STORE_KEY = 'offby/v1', KEEP = 500;
+
+  // 목표는 정수 초(2~9)만 나온다. 소수점 목표는 "4.7초"를 읽고 재현하는
+  // 과제가 되지만, 정수는 몸에 익은 단위라 순수하게 감각만 겨루게 된다.
+  // 목표 종류가 8개뿐이라 나중에 기록을 서로 비교하기도 쉽다.
+  const MIN_TARGET = 2, MAX_TARGET = 9;
+
+  const I18N = {
+    en: {
+      html: 'en', langButton: '한국어',
+      instrument: 'Precision timer', kicker: 'Target time', unit: 's',
+      start: 'Start', stop: 'Stop', next: 'Next',
+      pressStart: 'Press space to start', pressStop: 'Press space again to stop',
+      measuring: 'measuring',
+      recorded: v => v + ' s recorded',
+      log: 'Log', scale: 'Error 0.6s', early: 'Early', late: 'Late',
+      empty: 'Your first attempt shows up here',
+      attempts: 'Attempts', best: 'Best', avg: 'Avg error', streak: 'Streak',
+      showTimer: 'Show timer while measuring', clear: 'Clear',
+      grades: ['Perfect', 'Precise', 'Close', 'Off', 'Miss'],
+      dir: { late: 'late', early: 'early', exact: 'exact' },
+      verdict: (sign, abs, dir) => sign + abs + 's ' + dir,
+      noBias: 'No consistent lean',
+      bias: (v, isLate) => 'You press ' + v + 's ' + (isLate ? 'late' : 'early') + ' on average'
+    },
+    ko: {
+      html: 'ko', langButton: 'English',
+      instrument: '정밀 타이밍 측정기', kicker: '목표 시간', unit: '초',
+      start: '시작', stop: '정지', next: '다음 목표',
+      pressStart: '스페이스를 눌러 시작', pressStop: '스페이스를 다시 눌러 정지',
+      measuring: '측정 중',
+      recorded: v => v + ' 초 기록됨',
+      log: '측정 기록', scale: '오차 0.6초', early: '빠름', late: '늦음',
+      empty: '첫 기록이 여기에 남습니다',
+      attempts: '시도', best: '최고 정확도', avg: '평균 오차', streak: '연속 적중',
+      showTimer: '측정 중 시간 표시', clear: '기록 지우기',
+      grades: ['완벽', '정밀', '근접', '빗나감', '실패'],
+      dir: { late: '늦음', early: '빠름', exact: '정확' },
+      verdict: (sign, abs, dir) => sign + abs + '초 ' + dir,
+      noBias: '편향 없이 고르게 누릅니다',
+      bias: (v, isLate) => '평균 ' + v + '초 ' + (isLate ? '늦게' : '빠르게') + ' 누릅니다'
+    }
+  };
 
   const $ = id => document.getElementById(id);
   const el = {
-    target:$('target'), live:$('live'), verdict:$('verdict'), pad:$('pad'),
+    target:$('target'), unit:$('t-unit'), live:$('live'), verdict:$('verdict'), pad:$('pad'),
     rec:$('rec'), strip:$('strip'), empty:$('empty'), bias:$('bias'),
     count:$('s-count'), best:$('s-best'), avg:$('s-avg'), streak:$('s-streak'),
-    showTimer:$('show-timer'), reset:$('reset')
+    showTimer:$('show-timer'), reset:$('reset'), lang:$('lang')
+  };
+  // i18n 키 -> 그 문구를 그대로 넣을 엘리먼트 id
+  const LABELS = {
+    instrument:'t-instrument', kicker:'t-kicker', log:'t-log', scale:'t-scale',
+    early:'t-early', late:'t-late', empty:'empty', attempts:'t-attempts',
+    best:'t-best', avg:'t-avg', streak:'t-streak', showTimer:'t-showTimer'
   };
 
+  let lang = 'en', T = I18N.en;
   let target = 0, startedAt = 0, state = 'idle', raf = 0;
   let results = [], streak = 0, total = 0, best = null;
+  // 마지막 판정을 숫자로 들고 있는다. 언어를 바꿔도 문구만 다시 그리면 된다.
+  let lastVerdict = null;
 
   const fmt = n => n.toFixed(3);
 
@@ -328,7 +397,7 @@
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         v:1, results:results.slice(-KEEP), streak, total, best,
-        showTimer: el.showTimer.checked
+        showTimer: el.showTimer.checked, lang
       }));
     } catch (e) { /* 저장 못 해도 진행 */ }
   }
@@ -336,54 +405,112 @@
   function load(){
     try {
       const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
-      if (!saved || saved.v !== 1 || !Array.isArray(saved.results)) return;
+      if (!saved || saved.v !== 1 || !Array.isArray(saved.results)) return null;
       results = saved.results.filter(n => typeof n === 'number' && isFinite(n)).slice(-KEEP);
       streak  = Number.isFinite(saved.streak) ? saved.streak : 0;
       total   = Number.isFinite(saved.total)  ? saved.total  : results.length;
       best    = Number.isFinite(saved.best)   ? saved.best   : null;
       el.showTimer.checked = !!saved.showTimer;
-    } catch (e) { /* 손상된 기록은 버리고 새로 시작 */ }
+      return saved.lang;
+    } catch (e) { return null; }
+  }
+
+  // ── 언어 ────────────────────────────────
+  function applyLang(next){
+    lang = I18N[next] ? next : 'en';
+    T = I18N[lang];
+    document.documentElement.lang = T.html;
+    for (const key in LABELS) $(LABELS[key]).textContent = T[key];
+    el.unit.textContent = T.unit;
+    el.lang.textContent = T.langButton;
+    el.reset.textContent = T.clear;
+    el.pad.textContent = state === 'running' ? T.stop
+                       : state === 'locked'  ? T.next : T.start;
+    if (state === 'running') el.live.textContent = T.measuring;
+    drawVerdict();
+    render();
   }
 
   // ── 게임 ────────────────────────────────
   function newTarget(){
     let t;
-    do { t = (Math.round(Math.random()*79) + 20) / 10; } while (t === target);
+    do {
+      t = MIN_TARGET + Math.floor(Math.random() * (MAX_TARGET - MIN_TARGET + 1));
+    } while (t === target);
     target = t;
-    el.target.innerHTML = target.toFixed(2) + '<span class="unit">초</span>';
+    el.target.textContent = String(target);
+    el.target.appendChild(el.unit);   // 단위 span은 재사용한다
   }
 
-  function grade(abs){
-    if (abs <= 0.030) return {name:'완벽',  color:'var(--pen-good)', pen:'good'};
-    if (abs <= 0.100) return {name:'정밀',  color:'var(--ink)',      pen:''};
-    if (abs <= 0.250) return {name:'근접',  color:'var(--ink-soft)', pen:''};
-    if (abs <= 0.500) return {name:'빗나감',color:'var(--ink-soft)', pen:''};
-    return {name:'실패', color:'var(--pen-bad)', pen:'bad'};
+  function gradeIndex(abs){
+    if (abs <= 0.030) return 0;
+    if (abs <= 0.100) return 1;
+    if (abs <= 0.250) return 2;
+    if (abs <= 0.500) return 3;
+    return 4;
+  }
+  const GRADE_STYLE = [
+    {color:'var(--pen-good)', pen:'good'},
+    {color:'var(--ink)',      pen:''},
+    {color:'var(--ink-soft)', pen:''},
+    {color:'var(--ink-soft)', pen:''},
+    {color:'var(--pen-bad)',  pen:'bad'}
+  ];
+
+  function hint(text){
+    el.verdict.innerHTML = '';
+    const div = document.createElement('div');
+    div.className = 'hint';
+    div.textContent = text;
+    el.verdict.appendChild(div);
   }
 
-  function toIdle(msg){
+  function drawVerdict(){
+    if (!lastVerdict){
+      hint(state === 'running' ? T.pressStop : T.pressStart);
+      return;
+    }
+    const err = lastVerdict.err, abs = lastVerdict.abs;
+    const gi = gradeIndex(abs), style = GRADE_STYLE[gi];
+    const dir = abs < 0.0005 ? T.dir.exact : (err > 0 ? T.dir.late : T.dir.early);
+
+    el.verdict.innerHTML = '';
+    const line = document.createElement('div');
+    line.className = 'error';
+    line.style.color = style.color;
+    line.textContent = T.verdict(err >= 0 ? '+' : '−', fmt(abs), dir);
+    const badge = document.createElement('div');
+    badge.className = 'grade';
+    badge.style.color = style.color;
+    badge.textContent = T.grades[gi];
+    el.verdict.append(line, badge);
+  }
+
+  function toIdle(){
     state = 'idle';
     el.pad.disabled = false;
-    el.pad.textContent = '시작';
+    el.pad.textContent = T.start;
     el.rec.classList.remove('live');
     el.live.textContent = '';
-    if (msg) el.verdict.innerHTML = '<div class="hint">' + msg + '</div>';
+    lastVerdict = null;
+    hint(T.pressStart);
   }
 
   function start(){
     state = 'running';
     startedAt = performance.now();
-    el.pad.textContent = '정지';
+    el.pad.textContent = T.stop;
     el.rec.classList.add('live');
-    el.verdict.innerHTML = '<div class="hint">스페이스를 다시 눌러 정지</div>';
+    lastVerdict = null;
+    hint(T.pressStop);
     tick();
   }
 
   function tick(){
     if (state !== 'running') return;
     el.live.textContent = el.showTimer.checked
-      ? fmt((performance.now() - startedAt)/1000) + ' 초'
-      : '측정 중';
+      ? fmt((performance.now() - startedAt)/1000) + ' ' + T.unit
+      : T.measuring;
     raf = requestAnimationFrame(tick);
   }
 
@@ -393,16 +520,12 @@
     state = 'locked';
     el.rec.classList.remove('live');
     el.pad.disabled = true;
-    el.pad.textContent = '다음 목표';
-    el.live.textContent = fmt(elapsed) + ' 초 기록됨';
+    el.pad.textContent = T.next;
+    el.live.textContent = T.recorded(fmt(elapsed));
 
-    const err = elapsed - target, abs = Math.abs(err), g = grade(abs);
-    const dir = abs < 0.0005 ? '정확' : (err > 0 ? '늦음' : '빠름');
-    el.verdict.innerHTML =
-      '<div class="error" style="color:' + g.color + '">' +
-        (err >= 0 ? '+' : '−') + fmt(abs) + '초 ' + dir +
-      '</div>' +
-      '<div class="grade" style="color:' + g.color + '">' + g.name + '</div>';
+    const err = elapsed - target, abs = Math.abs(err);
+    lastVerdict = {err: err, abs: abs};
+    drawVerdict();
 
     results.push(err);
     if (results.length > KEEP) results = results.slice(-KEEP);
@@ -416,7 +539,7 @@
     setTimeout(function(){
       if (state !== 'locked') return;
       newTarget();
-      toIdle('스페이스를 눌러 시작');
+      toIdle();
     }, LOCKOUT);
   }
 
@@ -429,10 +552,10 @@
       const x = (i + 0.5) / MAX_MARKS * 100;
       const clamped = Math.max(-SCALE, Math.min(SCALE, err));
       const y = 50 + (clamped / SCALE) * 46;   // 늦으면 아래로
-      const abs = Math.abs(err), g = grade(abs);
+      const style = GRADE_STYLE[gradeIndex(Math.abs(err))];
 
       const mark = document.createElement('div');
-      mark.className = 'mark ' + g.pen + (i === shown.length - 1 ? ' fresh' : '');
+      mark.className = 'mark ' + style.pen + (i === shown.length - 1 ? ' fresh' : '');
       mark.style.left = x + '%';
 
       const stem = document.createElement('div');
@@ -464,8 +587,8 @@
 
     const mean = results.reduce((a,b)=>a+b,0) / results.length;
     el.bias.textContent = results.length < 3 ? ''
-      : Math.abs(mean) < 0.02 ? '편향 없이 고르게 누릅니다'
-      : '평균 ' + Math.abs(mean).toFixed(2) + '초 ' + (mean > 0 ? '늦게' : '빠르게') + ' 누릅니다';
+      : Math.abs(mean) < 0.02 ? T.noBias
+      : T.bias(Math.abs(mean).toFixed(2), mean > 0);
   }
 
   function press(){
@@ -484,18 +607,28 @@
 
   el.showTimer.addEventListener('change', save);
 
+  el.lang.addEventListener('click', function(){
+    applyLang(lang === 'en' ? 'ko' : 'en');
+    save();
+  });
+
   el.reset.addEventListener('click', function(){
-    results = []; streak = 0; total = 0; best = null;
+    results = []; streak = 0; total = 0; best = null; lastVerdict = null;
     cancelAnimationFrame(raf);
     try { localStorage.removeItem(STORE_KEY); } catch (e) { /* 무시 */ }
     draw(); render();
     newTarget();
-    toIdle('스페이스를 눌러 시작');
+    toIdle();
     el.pad.focus();
   });
 
-  load();
+  // 저장된 선택 > 브라우저 언어 > 영어. 기본은 영어지만 한국어 브라우저까지
+  // 굳이 영어로 맞이할 이유는 없다.
+  const savedLang = load();
+  const browserKo = (navigator.language || '').toLowerCase().indexOf('ko') === 0;
+  applyLang(savedLang || (browserKo ? 'ko' : 'en'));
   newTarget();
+  toIdle();
   draw();
   render();
 })();
