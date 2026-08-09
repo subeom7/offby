@@ -1,0 +1,16 @@
+{
+  "name": "timing-game",
+  "version": "1.0.0",
+  "private": true,
+  "description": "정밀 타이밍 측정기 — 목표 시간을 눈대중으로 맞추는 게임",
+  "type": "module",
+  "scripts": {
+    "test": "node test/game.test.mjs",
+    "fonts": "python tools/build_fonts.py",
+    "dev": "npx --yes serve public -l 5173"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  },
+  "license": "MIT"
+}

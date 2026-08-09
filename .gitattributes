@@ -1,0 +1,6 @@
+# 윈도우에서 작업하고 리눅스 CI에서 돈다. CRLF가 섞이지 않게 한다.
+* text=auto eol=lf
+
+*.woff2 binary
+*.ttf   binary
+*.png   binary
