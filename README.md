@@ -63,12 +63,12 @@ npm run og      # og:image 다시 만들기
 
 ```
               원본        서브셋
-Azeret Mono   104KB  ->  14.4KB   라틴 (가변 1개로 400/500/700)
-Plex Sans     525KB  ->  29.5KB   라틴 (가변)
-Plex KR x3    8.1MB  ->  69.1KB   한글 전용, unicode-range로 지연 로드
+Azeret Mono   104KB  ->  14.5KB   라틴 (가변 1개로 400/500/700)
+Plex Sans     525KB  ->  30.1KB   라틴 (가변)
+Plex KR x3    8.1MB  ->  85.5KB   한글 전용, unicode-range로 지연 로드
               ─────────────────
-영어 사용자                44KB
-한국어로 바꾸면          +69KB
+영어 사용자                45KB
+한국어로 바꾸면          +86KB
 ```
 
 글자 목록은 손으로 적지 않는다. `tools/build_fonts.py`가 `index.html`에서
@@ -80,7 +80,7 @@ Plex KR x3    8.1MB  ->  69.1KB   한글 전용, unicode-range로 지연 로드
 
 ## 캐시
 
-파일명에 내용 해시가 들어간다(`IBMPlexSansKR-Regular.04e26dce.woff2`).
+파일명에 내용 해시가 들어간다(`IBMPlexSansKR-Regular.aabf6dc5.woff2`).
 내용이 바뀌면 URL이 바뀌므로 영구 캐시가 안전하다.
 
 ```
@@ -108,14 +108,20 @@ public/
   index.html          게임 전체 (외부 의존성 없음)
   fonts/              서브셋한 woff2 + OFL 라이선스
   og.png              링크 공유용 이미지
+  favicon.svg         검색 결과와 브라우저 탭 아이콘
+  robots.txt          크롤링 정책 + sitemap 위치
+  sitemap.xml         검색엔진에 제출할 canonical URL 목록
   _headers            캐시 정책
+  _redirects          중복 HTML 경로 영구 리디렉션
 tools/
   build_fonts.py      폰트 다운로드 + 문자 체계별 서브셋 + 해시 파일명
   build_og.py         og:image 생성 (게임과 같은 색·폰트)
 test/
   game.test.mjs       jsdom 검증 49개
+  seo.test.mjs        메타·본문·JSON-LD·robots·sitemap 계약 검증
 docs/
   leaderboard-plan.md 리더보드를 붙일 때 결정해야 할 것들
+  seo.md              배포 뒤 검색엔진 등록·점검 체크리스트
 ```
 
 ## 테스트
@@ -128,6 +134,10 @@ jsdom에서 `performance.now()`를 직접 통제하며 보는 편이 빠르고 �
 판정 등급 경계, 연속 적중이 끊기는 조건, 차트 마크 개수, 언어 전환 후
 문구·통계 유지, 새로고침 후 복원, 저장된 언어가 브라우저 언어를 이기는지,
 기록 지우기, 손상된 저장값, `localStorage` 차단 환경.
+
+SEO 테스트는 title/description/canonical과 공유 메타의 일치, 정적 h1·게임 설명,
+WebSite JSON-LD, 실제 OG 이미지 크기, favicon, robots와 sitemap의 연결, sitemap의
+동일 출처 URL과 `/index.html` 영구 리디렉션을 검증한다.
 
 락아웃(650ms) 때문에 판정 문구는 곧 안내 문구로 덮인다. 테스트는 정지
 직후 값을 잡아 둔다 — 이걸 놓치면 "등급이 안 나온다"고 오해하기 쉽다.

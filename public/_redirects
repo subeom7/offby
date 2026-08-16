@@ -1,0 +1,2 @@
+# Keep the homepage on one permanent, canonical path.
+/index.html / 301
