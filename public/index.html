@@ -3,19 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>offby — precision timer</title>
-<meta name="description" content="A target time appears. Start, then stop when you think it has passed. Find out how far off you are, and which way you lean.">
+<title>Timing Accuracy Test — Precision Timer Game | offby</title>
+<meta name="description" content="Test your sense of time with offby, a free precision timer game. Stop at a random 2–9 second target, see your exact error, and track your best score.">
 <meta name="theme-color" content="#191A1E">
 <meta property="og:type" content="website">
-<meta property="og:title" content="offby — precision timer">
-<meta property="og:description" content="A target time appears. Start, then stop when you think it has passed. Find out how far off you are, and which way you lean.">
+<meta property="og:site_name" content="offby">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Timing Accuracy Test — Precision Timer Game | offby">
+<meta property="og:description" content="Test your sense of time with offby, a free precision timer game. Stop at a random 2–9 second target, see your exact error, and track your best score.">
 <meta property="og:url" content="https://offby.dev/">
 <meta property="og:image" content="https://offby.dev/og.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="offby precision timer game preview">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Timing Accuracy Test — Precision Timer Game | offby">
+<meta name="twitter:description" content="Test your sense of time with offby, a free precision timer game. Stop at a random 2–9 second target, see your exact error, and track your best score.">
+<meta name="twitter:image" content="https://offby.dev/og.png">
+<meta name="twitter:image:alt" content="offby precision timer game preview">
 <link rel="canonical" href="https://offby.dev/">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23FCF8F5'/><circle cx='16' cy='16' r='9' fill='none' stroke='%2317120F' stroke-width='2.5'/><path d='M16 10v6.5l4 2.5' stroke='%23BE3A29' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://offby.dev/#website",
+  "url": "https://offby.dev/",
+  "name": "offby",
+  "alternateName": "Offby",
+  "description": "Test your sense of time with a free precision timer game.",
+  "inLanguage": ["en", "ko"]
+}
+</script>
 <style>
   /* 폰트는 직접 호스팅한다. CDN을 쓰면 첫 렌더가 외부 왕복만큼 늦어지고
      방문자 IP가 그쪽으로 넘어간다.
@@ -27,30 +47,30 @@
      파일만 받는다 — 영어 사용자는 한글 폰트를 아예 받지 않는다. */
   @font-face{
     font-family:"Azeret Mono";
-    src:url("fonts/AzeretMono-var.ad4284a3.woff2") format("woff2");
+    src:url("fonts/AzeretMono-var.60a42d39.woff2") format("woff2");
     font-weight:100 900; font-display:swap;
   }
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSans-var.63777163.woff2") format("woff2");
+    src:url("fonts/IBMPlexSans-var.7f2659f4.woff2") format("woff2");
     font-weight:100 900; font-display:swap;
   }
   /* 아래 셋은 한글을 그릴 때만 받아 간다 */
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSansKR-Regular.04e26dce.woff2") format("woff2");
+    src:url("fonts/IBMPlexSansKR-Regular.aabf6dc5.woff2") format("woff2");
     font-weight:400; font-display:swap;
     unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSansKR-Medium.0e85dee8.woff2") format("woff2");
+    src:url("fonts/IBMPlexSansKR-Medium.2aa48b03.woff2") format("woff2");
     font-weight:500; font-display:swap;
     unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSansKR-SemiBold.2de8ea89.woff2") format("woff2");
+    src:url("fonts/IBMPlexSansKR-SemiBold.bce6cb0e.woff2") format("woff2");
     font-weight:600; font-display:swap;
     unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
@@ -70,9 +90,10 @@
 
   *{box-sizing:border-box;margin:0;padding:0}
 
-  html,body{height:100%}
+  html,body{min-height:100%}
 
   body{
+    min-height:100vh;
     background:
       radial-gradient(120% 90% at 50% 0%, var(--desk-2) 0%, var(--desk) 62%);
     color:var(--ink);
@@ -262,6 +283,21 @@
   .reset:hover,.lang:hover{color:var(--ink)}
   .bias{flex:1;text-align:center;font-size:11.5px}
 
+  /* 검색엔진과 처음 온 사람 모두 게임의 규칙을 바로 이해할 수 있게, 설명을
+     JS로 만들지 않고 실제 본문에 둔다. */
+  .about{
+    padding:17px 22px 19px;
+    border-top:1px solid var(--edge);
+    background:#F8F1ED;
+  }
+  .about h2{
+    font-size:14px;font-weight:600;line-height:1.35;
+  }
+  .about p{
+    max-width:68ch;margin-top:6px;
+    color:var(--ink-soft);font-size:12.5px;line-height:1.55;
+  }
+
   /* 큰 화면에서는 카드가 검은 바탕 한가운데 뜬 우표처럼 보인다. 계측기라는
      인상을 주려면 어느 정도 덩치가 필요하다. 뷰포트 폭만 보면 짧고 넓은
      화면에서 세로가 넘치므로 높이도 함께 조건에 넣는다. */
@@ -286,6 +322,9 @@
     .cell .v{font-size:24px}
     .foot{padding:14px 30px;font-size:13.5px}
     .bias{font-size:13px}
+    .about{padding:20px 30px 22px}
+    .about h2{font-size:15px}
+    .about p{font-size:13.5px}
   }
 
   @media (max-width:520px){
@@ -304,7 +343,7 @@
 
 <main class="machine">
   <div class="head">
-    <span class="eyebrow" id="t-instrument">Precision timer</span>
+    <h1 class="eyebrow" id="t-instrument">Precision timer</h1>
     <span class="rec" id="rec"><span class="bulb"></span>REC</span>
   </div>
 
@@ -342,6 +381,11 @@
     <button class="lang" id="lang">한국어</button>
     <button class="reset" id="reset">Clear</button>
   </div>
+
+  <section class="about" aria-labelledby="t-about-title">
+    <h2 id="t-about-title">Test your sense of time</h2>
+    <p id="t-about-copy">Start the hidden timer, then stop as close as you can to a random target from 2 to 9 seconds. offby shows your exact error, best attempt, average error, and whether you tend to stop early or late.</p>
+  </section>
 </main>
 
 <script>
@@ -364,6 +408,8 @@
     en: {
       html: 'en', langButton: '한국어',
       instrument: 'Precision timer', kicker: 'Target time', unit: 's',
+      aboutTitle: 'Test your sense of time',
+      aboutCopy: 'Start the hidden timer, then stop as close as you can to a random target from 2 to 9 seconds. offby shows your exact error, best attempt, average error, and whether you tend to stop early or late.',
       start: 'Start', stop: 'Stop', next: 'Next',
       pressStart: 'Press space to start', pressStop: 'Press space again to stop',
       measuring: 'measuring',
@@ -381,6 +427,8 @@
     ko: {
       html: 'ko', langButton: 'English',
       instrument: '정밀 타이밍 측정기', kicker: '목표 시간', unit: '초',
+      aboutTitle: '시간 감각 테스트',
+      aboutCopy: '2초에서 9초 사이의 무작위 목표를 확인하고 보이지 않는 타이머를 시작한 뒤, 목표에 최대한 가깝게 멈춰 보세요. 정확한 오차와 최고 기록, 평균 오차, 빠르거나 늦게 누르는 경향을 확인할 수 있습니다.',
       start: '시작', stop: '정지', next: '다음 목표',
       pressStart: '스페이스를 눌러 시작', pressStop: '스페이스를 다시 눌러 정지',
       measuring: '측정 중',
@@ -408,7 +456,8 @@
   const LABELS = {
     instrument:'t-instrument', kicker:'t-kicker', log:'t-log', scale:'t-scale',
     early:'t-early', late:'t-late', empty:'empty', attempts:'t-attempts',
-    best:'t-best', avg:'t-avg', streak:'t-streak', showTimer:'t-showTimer'
+    best:'t-best', avg:'t-avg', streak:'t-streak', showTimer:'t-showTimer',
+    aboutTitle:'t-about-title', aboutCopy:'t-about-copy'
   };
 
   let lang = 'en', T = I18N.en;
