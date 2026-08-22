@@ -22,8 +22,9 @@
     {
       "binding": "DB",
       "database_name": "offby",
-      // npx wrangler d1 create offby 로 만들고 그 id를 여기 적는다.
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+      // npx wrangler d1 create offby 로 만들었다. 이 id가 파일에 들어 있어야
+      // Cloudflare 빌드가 바인딩을 걸 수 있다 — 비밀값이 아니다.
+      "database_id": "47c4db0d-36c3-4941-97ff-899fac4a809b"
     }
   ],
 
