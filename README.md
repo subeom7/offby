@@ -8,22 +8,27 @@
 이름은 게임의 출력에서 왔다 — `+0.008s late`. **얼마나 off by 인가**가
 이 게임이 답하는 전부다.
 
-정적 HTML 한 장이다. 서버도 번들러도 없다.
+혼자 치는 **연습**, 연속 10회로 순위를 겨루는 **기록 도전**, 다 같이
+같은 목표를 받아 동시에 시작하는 **방** — 셋이 한 장의 HTML 안에 있다.
+번들러는 여전히 없다.
 
 ```
-npm test        # 게임 로직 · 언어 전환 · 기록 저장 검증 (jsdom, 브라우저 불필요)
-npm run dev     # http://localhost:5173
+npm test        # 게임 · 화면 · SEO · 워커 · 방  (jsdom + 노드, 브라우저 불필요)
+npm run dev     # http://localhost:5173   정적만. 연습 모드가 그대로 돈다
+npm run dev:api # 전체 (API·방). wrangler라 Node 22가 필요하다
 npm run fonts   # 폰트 서브셋 다시 만들기 (문구를 고쳤을 때)
 npm run og      # og:image 다시 만들기
 ```
 
 ---
 
-## 왜 정적인가
+## 왜 엣지인가
 
-이 게임은 클라이언트에서 전부 끝난다. 서버가 할 일이 없다.
+게임 자체는 클라이언트에서 끝난다. 서버가 하는 일은 순위를 보관하고
+방의 라운드를 여는 것뿐이라, 항상 켜져 있는 VM이 할 일이 아니다.
 
-그래서 VM이 아니라 **Cloudflare Workers**(정적 자산)에 올린다. 트래픽이
+그래서 **Cloudflare Workers**에 올린다. 정적 자산은 엣지에서 그대로
+나가고, `/api/*`와 방 URL만 워커를 탄다. 트래픽이
 몰려도 엣지가 받아내고, 비용은 0이고, 관리할 서버가 없다. 링크 하나가
 퍼져서 동시 접속이 튀는 게 이 게임의 성공 시나리오인데, 그 시나리오에서
 단일 인스턴스는 가장 나쁜 선택이다.
@@ -33,6 +38,11 @@ npm run og      # og:image 다시 만들기
 | 월 비용 | ~$21 | 0 |
 | 동시 접속 급증 | 코어 수만큼 버티다 죽음 | 엣지에서 분산 |
 | 배포 | 컨테이너·인증서·프로세스 | git push |
+| 실시간 방 | 프로세스에 상태를 이고 있음 | Durable Object 하나 = 방 하나 |
+
+무료 티어 안에 들어가는 게 설계 제약이다. 특히 **WebSocket 메시지 하나가
+DO 요청 하나로 과금**돼서(하루 10만), 방 프로토콜은 라운드당 1인 3메시지를
+넘기지 않게 짰다 — [docs/multiplayer.md](docs/multiplayer.md).
 
 ## 목표는 정수 초만 나온다
 
@@ -113,14 +123,30 @@ public/
   sitemap.xml         검색엔진에 제출할 canonical URL 목록
   _headers            캐시 정책
   _redirects          중복 HTML 경로 영구 리디렉션
+src/
+  worker.js           /api/* 라우팅. 나머지는 그대로 ASSETS로 넘어간다
+  room.js             방 하나 = Durable Object 하나 (WebSocket Hibernation)
+  schema.sql          D1 스키마
+  lib/
+    run.js            런 발급·검증 (목표 서명, 벽시계 하한, 사람의 한계)
+    board.js          순위 쿼리 + 캐시 + 보관 정리
+    room-logic.js     라운드 판정·점수·도착창 (순수 함수)
+    sign.js           HMAC (WebCrypto만 — 노드에서도 그대로 돈다)
+    ids.js            방 코드·닉네임 정제·플레이어 해시
 tools/
   build_fonts.py      폰트 다운로드 + 문자 체계별 서브셋 + 해시 파일명
   build_og.py         og:image 생성 (게임과 같은 색·폰트)
+  check_assets.py     폰트 글리프 커버리지 · og 크기 검사
 test/
-  game.test.mjs       jsdom 검증 49개
-  seo.test.mjs        메타·본문·JSON-LD·robots·sitemap 계약 검증
+  game.test.mjs       솔로 게임이 예전 그대로인가 (49)
+  client.test.mjs     모드 전환·기록 도전·순위표·방 화면 (76)
+  seo.test.mjs        메타·본문·JSON-LD·robots·sitemap 계약 (55)
+  worker.test.mjs     서명·런 검증·순위 쿼리·라운드 판정 (90)
+  room.test.mjs       방 상태 전이 (53)
+  stub/               cloudflare:workers 대역 — 워커 런타임 없이 Room을 돌린다
 docs/
-  leaderboard-plan.md 리더보드를 붙일 때 결정해야 할 것들
+  leaderboard.md      순위 기준과 부정 방지 — 계획에서 뒤집힌 지점 포함
+  multiplayer.md      동시 시작·도착창·DO 수명
   seo.md              배포 뒤 검색엔진 등록·점검 체크리스트
 ```
 
@@ -138,6 +164,19 @@ jsdom에서 `performance.now()`를 직접 통제하며 보는 편이 빠르고 �
 SEO 테스트는 title/description/canonical과 공유 메타의 일치, 정적 h1·게임 설명,
 WebSite JSON-LD, 실제 OG 이미지 크기, favicon, robots와 sitemap의 연결, sitemap의
 동일 출처 URL과 `/index.html` 영구 리디렉션을 검증한다.
+
+서버 쪽도 같은 방식이다. `src/lib/*`는 WebCrypto만 쓰므로 노드에서 그대로
+import된다 — 서명 위조, 목표 바꿔치기, 벽시계 하한, 도착창을 워커를 띄우지
+않고 본다. 방은 `cloudflare:workers`를 대역으로 돌려(`test/stub/`) Room을
+노드에서 통째로 돌린다. **wrangler가 Node 22를 요구하는데 CI는 20**이기도
+하고, 어차피 여기서 깨지기 쉬운 건 바인딩이 아니라 순서다 — 누가 방장인가,
+나간 사람을 기다리다 라운드가 멈추지 않는가, 마감에 안 낸 사람이 DNF가 되는가.
+
+화면 테스트는 `fetch`와 `WebSocket`을 대역으로 넣는다. 물어보는 건 네트워크가
+아니라 **서버 응답에 화면이 어떻게 반응하는가**이고, 특히 **서버가 없을 때
+연습 모드로 조용히 떨어지는지**를 본다. 문구가 배로 늘어난 변경이라 en/ko
+키 커버리지도 통째로 비교한다 — 한쪽에만 키를 추가하는 실수는 화면을 다
+눌러 보기 전엔 안 드러난다.
 
 락아웃(650ms) 때문에 판정 문구는 곧 안내 문구로 덮인다. 테스트는 정지
 직후 값을 잡아 둔다 — 이걸 놓치면 "등급이 안 나온다"고 오해하기 쉽다.
@@ -158,19 +197,45 @@ Cloudflare Workers에 저장소를 연결한다. 설정은 `wrangler.jsonc`가 �
 
 `main`에 push하면 배포된다.
 
-Pages가 아니라 Workers인 이유: Cloudflare가 둘을 Workers로 통합하는 중이고,
-리더보드 같은 API가 필요해지면 `wrangler.jsonc`에 `main`만 추가해서 `/api/*`를
-처리하면 되기 때문이다. 정적 자산은 그대로 엣지에서 나가고 API 요청만 워커를
-탄다. Pages였다면 구조를 바꿔야 한다. 지금은 `main`이 없어 워커 코드가 한
-줄도 없다.
+Pages가 아니라 Workers를 고른 게 여기서 값을 했다. 리더보드와 방을 붙이면서
+`wrangler.jsonc`에 `main`과 바인딩만 더했고 **정적 사이트 구조는 하나도 안
+바꿨다.** 정적 자산은 그대로 엣지에서 나가고 `/api/*`만 워커를 탄다.
+
+처음 배포 전에 계정 쪽 준비가 세 줄 필요하다.
+
+```
+npx wrangler d1 create offby                              # 나온 id를 wrangler.jsonc에
+npx wrangler d1 execute offby --file=src/schema.sql --remote
+npx wrangler secret put RUN_SECRET                        # 긴 랜덤 문자열
+```
+
+이게 없으면 `/api/*`가 503(`unconfigured`)을 낸다. 클라이언트는 그걸 보고
+연습 모드로 떨어지므로, **설정이 덜 돼도 게임은 열린다.**
 
 wrangler 4는 Node 22 이상을 요구한다. `.node-version`으로 빌드 환경에
 고정해 뒀다. 로컬 Node가 20이면 `npm test`는 되지만 `npx wrangler`는 안 된다
 — 배포는 Cloudflare가 하므로 문제되지 않는다.
 
+## 순위와 방
+
+두 문서가 설계의 이유를 들고 있다.
+
+[docs/leaderboard.md](docs/leaderboard.md) — 순위는 연속 10회의 평균으로
+매긴다(단발 최고 기록은 운으로 나온다). 계획에서 한 군데가 뒤집혔는데,
+**시도마다 목표를 발급하는 구조를 버린 것**이 그것이다 — 목표는 어차피 매
+시도 전에 화면에 뜨므로 봇에게는 아무 차이가 없고, 대신 650ms 락아웃 안에
+네트워크가 끼어 게임이 끊긴다. 실제로 막는 건 벽시계 하한과 사람의 한계
+필터다.
+
+[docs/multiplayer.md](docs/multiplayer.md) — **동시 시작에 정밀한 시계
+동기화는 필요 없다.** 각자의 오차는 자기 기기의 `performance.now()` 차이로
+재므로 시계가 어긋나도 점수는 공정하다. 동기화는 순전히 카운트다운을 같이
+보기 위한 것이라 ±50ms면 충분하고, 그래서 입장할 때 ping 다섯 번으로 끝난다.
+
 ## 다음
 
-[docs/leaderboard-plan.md](docs/leaderboard-plan.md) — 리더보드를 붙일 때
-결정해야 할 것들. 요약하면 신원(로그인 말고 닉네임 + 기기 ID)보다
-**부정 방지**가 어렵고, 서버가 라운드를 열어 서명 토큰을 주는 구조가
-그 출발점이다.
+- `HUMAN_FLOOR`(사람이 낼 수 있는 평균오차의 하한)를 실측으로 정하기.
+  지금 값에는 근거가 없어서, 걸린 런을 버리지 않고 `flagged`로 쌓아 두고 있다.
+- 방 성적은 아직 글로벌 순위와 분리돼 있다. 친구끼리 짜고 치는 경로를
+  막으려는 것인데, 방 쪽이 서버가 라운드를 열어 검증이 더 강하다는 점에서
+  다시 볼 여지가 있다.

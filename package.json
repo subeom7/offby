@@ -5,11 +5,15 @@
   "description": "offby — a precision timing game. How far off are you?",
   "type": "module",
   "scripts": {
-    "test": "npm run test:game && npm run test:seo",
+    "test": "npm run test:game && npm run test:client && npm run test:seo && npm run test:worker && npm run test:room",
     "test:game": "node test/game.test.mjs",
+    "test:client": "node test/client.test.mjs",
     "test:seo": "node test/seo.test.mjs",
+    "test:worker": "node test/worker.test.mjs",
+    "test:room": "node --import ./test/stub/register.mjs test/room.test.mjs",
     "fonts": "python tools/build_fonts.py",
     "dev": "npx --yes serve public -l 5173",
+    "dev:api": "npx wrangler dev",
     "og": "python tools/build_og.py"
   },
   "devDependencies": {

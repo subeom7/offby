@@ -47,30 +47,30 @@
      파일만 받는다 — 영어 사용자는 한글 폰트를 아예 받지 않는다. */
   @font-face{
     font-family:"Azeret Mono";
-    src:url("fonts/AzeretMono-var.60a42d39.woff2") format("woff2");
+    src:url("fonts/AzeretMono-var.f7b26d69.woff2") format("woff2");
     font-weight:100 900; font-display:swap;
   }
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSans-var.7f2659f4.woff2") format("woff2");
+    src:url("fonts/IBMPlexSans-var.7b48a8e4.woff2") format("woff2");
     font-weight:100 900; font-display:swap;
   }
   /* 아래 셋은 한글을 그릴 때만 받아 간다 */
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSansKR-Regular.aabf6dc5.woff2") format("woff2");
+    src:url("fonts/IBMPlexSansKR-Regular.266df491.woff2") format("woff2");
     font-weight:400; font-display:swap;
     unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSansKR-Medium.2aa48b03.woff2") format("woff2");
+    src:url("fonts/IBMPlexSansKR-Medium.e1fe8251.woff2") format("woff2");
     font-weight:500; font-display:swap;
     unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
   @font-face{
     font-family:"Plex";
-    src:url("fonts/IBMPlexSansKR-SemiBold.bce6cb0e.woff2") format("woff2");
+    src:url("fonts/IBMPlexSansKR-SemiBold.31fda5bd.woff2") format("woff2");
     font-weight:600; font-display:swap;
     unicode-range:U+1100-11FF, U+3130-318F, U+AC00-D7A3;
   }
@@ -298,6 +298,114 @@
     color:var(--ink-soft);font-size:12.5px;line-height:1.55;
   }
 
+  /* .pad와 .stats는 display를 직접 지정하므로 hidden 속성만으로는 안 숨는다.
+     뷰 전환이 전부 hidden 토글이라 여기서 한 번에 못 박아 둔다. */
+  [hidden]{display:none!important}
+
+  /* ── 모드 탭 ───────────────────────────── */
+  .modes{display:flex;border-bottom:1px solid var(--edge);background:#FAF4F0}
+  .mode{
+    flex:1;padding:9px 4px;
+    background:none;border:none;cursor:pointer;
+    border-bottom:2px solid transparent;
+    font-family:"Azeret Mono", monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-soft);
+    transition:color .12s ease, border-color .12s ease;
+  }
+  .mode:hover{color:var(--ink)}
+  .mode[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--pen-bad)}
+  .mode:focus-visible{outline:2px solid var(--pen-bad);outline-offset:-2px}
+
+  /* 카운트다운은 목표 아래 같은 자리를 쓴다. 방에서는 이게 "다 같이
+     시작한다"는 신호라 눈에 띄어야 한다. */
+  .live.count{font-size:26px;color:var(--pen-bad);font-weight:500}
+
+  /* ── 판 공통 ───────────────────────────── */
+  .panel{padding:16px 22px 20px;border-top:1px solid var(--edge)}
+  .note{margin-top:11px;font-size:11.5px;color:var(--ink-soft);line-height:1.55}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+  .field span,.tab,.btn,.board th,.room-meta{
+    font-family:"Azeret Mono",monospace;
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  }
+  .field span{font-size:9px;color:var(--ink-soft)}
+
+  input.txt{
+    font-family:"Azeret Mono",monospace;font-size:14px;
+    padding:9px 10px;border:1px solid var(--edge);border-radius:3px;
+    background:#FFFBF9;color:var(--ink);width:100%;
+  }
+  input.txt:focus{outline:2px solid var(--pen-bad);outline-offset:-1px}
+  input.code{text-transform:uppercase;letter-spacing:.3em;width:7em;text-align:center}
+
+  .btn{
+    padding:9px 14px;border:1px solid var(--ink);border-radius:3px;
+    background:var(--ink);color:var(--paper);cursor:pointer;
+  }
+  .btn:hover{background:#2C2320}
+  .btn.ghost{background:none;color:var(--ink)}
+  .btn.ghost:hover{background:#EFE5DF}
+  .btn[disabled]{background:var(--edge);border-color:var(--edge);color:var(--ink-soft);cursor:default}
+
+  /* ── 순위표 ────────────────────────────── */
+  .tabs{display:flex;gap:16px;margin-bottom:12px}
+  .tab{
+    background:none;border:none;cursor:pointer;padding:2px 0;
+    border-bottom:1px solid transparent;color:var(--ink-soft);
+  }
+  .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+
+  .board{width:100%;font-size:13px}
+  .board table{width:100%;border-collapse:collapse}
+  .board th{
+    text-align:left;padding-bottom:6px;border-bottom:1px solid var(--edge);
+    font-weight:400;font-size:9px;color:var(--ink-soft);
+    /* 숫자 칸은 내용 폭까지 줄어든다. 머리글이 접히지 않게 막아 두면
+       칸이 최소한 머리글 폭은 갖는다 (한국어 '순위'가 두 줄로 접혔었다). */
+    white-space:nowrap;
+  }
+  .board td{padding:7px 0;border-bottom:1px solid #F0E7E1}
+  .board .n,.board .v{font-family:"Azeret Mono",monospace;font-variant-numeric:tabular-nums}
+  .board .n{color:var(--ink-soft)}
+  .board .v{text-align:right;white-space:nowrap}
+  /* 긴 닉네임이 숫자 칸을 밀어내지 않게 이름 칸이 남는 폭을 다 먹는다.
+     그러면 옆 칸들은 내용 폭으로 줄어들어 서로 붙으므로, 간격은 여기서
+     padding으로 준다 — width로는 안 벌어진다. */
+  .board .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:1px;width:99%}
+  .board .n,.board th.n{padding-right:14px}
+  .board .who,.board th.who{padding-right:14px}
+  .board tr.me td{background:#FBEFE9}
+  .board tr.me .who{font-weight:600}
+  .board tr.win .n{color:var(--pen-bad)}
+  .board .dnf{color:var(--ink-soft)}
+  .board .none{padding:20px 0;text-align:center;color:var(--ink-soft);font-size:12px}
+
+  /* ── 방 ───────────────────────────────── */
+  .room-head{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid var(--edge);
+  }
+  .room-code{
+    font-family:"Azeret Mono",monospace;font-size:20px;font-weight:700;letter-spacing:.24em;
+  }
+  .room-meta{flex:1;text-align:right;color:var(--ink-soft)}
+  .roster{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px}
+  .roster li{
+    display:flex;align-items:center;gap:6px;
+    padding:5px 10px;border:1px solid var(--edge);border-radius:999px;
+    font-size:12px;background:#FFFBF9;
+  }
+  .roster li.self{border-color:var(--ink)}
+  /* 이번 라운드를 이미 낸 사람. 누구를 기다리는지 한눈에 보인다. */
+  .roster li.done{background:#EDF5F2;border-color:var(--pen-good)}
+  .roster .host::before{content:"\2605";color:var(--pen-bad);font-size:11px;margin-right:4px}
+  .roster .pts{
+    font-family:"Azeret Mono",monospace;font-size:11px;
+    color:var(--ink-soft);font-variant-numeric:tabular-nums;
+  }
+
   /* 큰 화면에서는 카드가 검은 바탕 한가운데 뜬 우표처럼 보인다. 계측기라는
      인상을 주려면 어느 정도 덩치가 필요하다. 뷰포트 폭만 보면 짧고 넓은
      화면에서 세로가 넘치므로 높이도 함께 조건에 넣는다. */
@@ -325,6 +433,10 @@
     .about{padding:20px 30px 22px}
     .about h2{font-size:15px}
     .about p{font-size:13.5px}
+    .mode{font-size:12px;padding:11px 6px}
+    .panel{padding:20px 30px 24px}
+    .board{font-size:14px}
+    .room-code{font-size:24px}
   }
 
   @media (max-width:520px){
@@ -333,6 +445,9 @@
     .cell:nth-child(n+3){border-top:1px solid var(--edge)}
     .strip{height:134px}
     .foot{flex-wrap:wrap;justify-content:center}
+    /* 탭 넷이 한 줄에 들어가야 한다. 자간부터 줄인다. */
+    .mode{letter-spacing:.08em;font-size:9.5px}
+    .panel{padding:14px 16px 18px}
   }
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
@@ -347,7 +462,14 @@
     <span class="rec" id="rec"><span class="bulb"></span>REC</span>
   </div>
 
-  <section class="readout">
+  <nav class="modes" id="modes" role="tablist" aria-label="Mode">
+    <button class="mode" id="m-practice" role="tab" aria-selected="true" data-mode="practice">Practice</button>
+    <button class="mode" id="m-ranked"   role="tab" aria-selected="false" data-mode="ranked">Ranked</button>
+    <button class="mode" id="m-room"     role="tab" aria-selected="false" data-mode="room">Room</button>
+    <button class="mode" id="m-ranks"    role="tab" aria-selected="false" data-mode="ranks">Ranks</button>
+  </nav>
+
+  <section class="readout" id="readout">
     <div class="kicker" id="t-kicker">Target time</div>
     <div class="target" id="target">—<span class="unit" id="t-unit">s</span></div>
     <div class="live" id="live"></div>
@@ -356,7 +478,7 @@
 
   <button class="pad" id="pad">Start</button>
 
-  <div class="strip-wrap">
+  <div class="strip-wrap" id="strip-wrap">
     <div class="strip-head">
       <span id="t-log">Log</span><span id="t-scale">Error 0.6s</span>
     </div>
@@ -368,12 +490,65 @@
     </div>
   </div>
 
-  <div class="stats">
+  <div class="stats" id="stats">
     <div class="cell"><div class="k" id="t-attempts">Attempts</div><div class="v" id="s-count">0</div></div>
     <div class="cell"><div class="k" id="t-best">Best</div><div class="v" id="s-best">—</div></div>
     <div class="cell"><div class="k" id="t-avg">Avg error</div><div class="v" id="s-avg">—</div></div>
-    <div class="cell"><div class="k" id="t-streak">Streak</div><div class="v" id="s-streak">0</div></div>
+    <div class="cell" id="cell-4"><div class="k" id="t-streak">Streak</div><div class="v" id="s-streak">0</div></div>
   </div>
+
+  <!-- ── 런 제출 ─────────────────────────── -->
+  <!-- 10회를 다 친 뒤에야 뜬다. 이름을 먼저 받으면 그 자리가 이탈 지점이
+       되는데, 여기까지 온 사람은 이미 게임을 한 판 끝낸 사람이다. -->
+  <section class="panel" id="panel-run" hidden>
+    <label class="field">
+      <span id="t-run-name">Your name</span>
+      <input class="txt" id="run-nick" maxlength="16" autocomplete="nickname">
+    </label>
+    <div class="row">
+      <button class="btn" id="run-submit">Submit run</button>
+      <button class="btn ghost" id="run-again">Practice</button>
+    </div>
+    <p class="note" id="run-result"></p>
+  </section>
+
+  <!-- ── 리더보드 ────────────────────────── -->
+  <section class="panel" id="panel-ranks" hidden>
+    <div class="tabs">
+      <button class="tab" id="b-today" aria-selected="true" data-scope="today">Today</button>
+      <button class="tab" id="b-all" aria-selected="false" data-scope="all">All time</button>
+    </div>
+    <div class="board" id="board"></div>
+    <p class="note" id="t-ranks-note">Ranked by average error across one 10-attempt run. Only your best run counts.</p>
+  </section>
+
+  <!-- ── 방 ──────────────────────────────── -->
+  <section class="panel" id="panel-room" hidden>
+    <div id="room-join">
+      <label class="field">
+        <span id="t-name">Your name</span>
+        <input class="txt" id="nick" maxlength="16" autocomplete="nickname">
+      </label>
+      <div class="row">
+        <button class="btn" id="room-create">Create room</button>
+        <input class="txt code" id="room-code-in" maxlength="4" placeholder="CODE"
+               autocapitalize="characters" autocomplete="off" spellcheck="false">
+        <button class="btn ghost" id="room-enter">Join</button>
+      </div>
+      <p class="note" id="t-room-note">Everyone in the room gets the same target and starts together. Closest to the target wins the round.</p>
+    </div>
+
+    <div id="room-live" hidden>
+      <div class="room-head">
+        <span class="room-code" id="room-code-out"></span>
+        <button class="btn ghost" id="room-copy">Copy link</button>
+        <span class="room-meta" id="room-meta"></span>
+      </div>
+      <ol class="roster" id="roster"></ol>
+      <div class="board" id="room-board"></div>
+      <p class="note" id="room-note"></p>
+    </div>
+  </section>
 
   <div class="foot">
     <label><input type="checkbox" id="show-timer"><span id="t-showTimer">Show timer while measuring</span></label>
@@ -422,7 +597,42 @@
       dir: { late: 'late', early: 'early', exact: 'exact' },
       verdict: (sign, abs, dir) => sign + abs + 's ' + dir,
       noBias: 'No consistent lean',
-      bias: (v, isLate) => 'You press ' + v + 's ' + (isLate ? 'late' : 'early') + ' on average'
+      bias: (v, isLate) => 'You press ' + v + 's ' + (isLate ? 'late' : 'early') + ' on average',
+
+      mPractice: 'Practice', mRanked: 'Ranked', mRoom: 'Room', mRanks: 'Ranks',
+
+      today: 'Today', allTime: 'All time',
+      ranksNote: 'Ranked by average error across one 10-attempt run. Only your best run counts.',
+      colRank: '#', colPlayer: 'Player', colAvg: 'Avg error',
+      colRound: 'This round', colPts: 'Pts',
+      boardEmpty: 'No runs on the board yet. Be the first.',
+      boardLoading: 'Loading',
+      boardOffline: 'The leaderboard is unavailable right now.',
+
+      progress: 'Progress',
+      runRound: (i, n) => 'Round ' + i + '/' + n,
+      runOf: (i, n) => 'Attempt ' + i + ' of ' + n,
+      runName: 'Your name', runSubmit: 'Submit run', runSending: 'Sending',
+      runAvg: v => v + 's average error',
+      runRanked: (d, a) => 'Now #' + d + ' today, #' + a + ' all time',
+      runFlagged: 'Too accurate to be human — recorded, but not ranked.',
+      runFailed: 'Could not submit this run.',
+      runOffline: 'Ranked runs need a connection. Practice still works offline.',
+
+      name: 'Your name', createRoom: 'Create room', join: 'Join',
+      roomNote: 'Everyone in the room gets the same target and starts together. Closest to the target wins the round.',
+      copyLink: 'Copy link', copied: 'Copied',
+      roomConnecting: 'Connecting',
+      roomLost: 'Disconnected. Reload the page to rejoin.',
+      roomFull: 'That room is full.',
+      roomBadCode: 'Room codes are 4 characters.',
+      roomOffline: 'Rooms are unavailable right now.',
+      roomMeta: (n, r) => n + (n === 1 ? ' player' : ' players') + (r ? ' · round ' + r : ''),
+      startRound: 'Start round', waitHost: 'Waiting for the host',
+      waitOthers: 'Waiting for the others', roomReady: 'Get ready',
+      roomWin: who => who + ' wins the round',
+      roomTie: 'Tied round', roomNobody: 'Nobody stopped in time',
+      dnf: 'no result'
     },
     ko: {
       html: 'ko', langButton: 'English',
@@ -441,7 +651,42 @@
       dir: { late: '늦음', early: '빠름', exact: '정확' },
       verdict: (sign, abs, dir) => sign + abs + '초 ' + dir,
       noBias: '편향 없이 고르게 누릅니다',
-      bias: (v, isLate) => '평균 ' + v + '초 ' + (isLate ? '늦게' : '빠르게') + ' 누릅니다'
+      bias: (v, isLate) => '평균 ' + v + '초 ' + (isLate ? '늦게' : '빠르게') + ' 누릅니다',
+
+      mPractice: '연습', mRanked: '기록 도전', mRoom: '방', mRanks: '순위',
+
+      today: '오늘', allTime: '전체 기간',
+      ranksNote: '연속 10회의 평균 오차로 매깁니다. 사람마다 가장 좋았던 런 하나만 올라갑니다.',
+      colRank: '순위', colPlayer: '이름', colAvg: '평균 오차',
+      colRound: '이번 라운드', colPts: '점수',
+      boardEmpty: '아직 기록이 없습니다. 첫 기록을 남겨 보세요.',
+      boardLoading: '불러오는 중',
+      boardOffline: '지금은 순위표를 볼 수 없습니다.',
+
+      progress: '진행',
+      runRound: (i, n) => i + '/' + n + '회',
+      runOf: (i, n) => '전체 ' + n + '회 중 ' + i + '회째',
+      runName: '이름', runSubmit: '기록 올리기', runSending: '보내는 중',
+      runAvg: v => '평균 오차 ' + v + '초',
+      runRanked: (d, a) => '오늘 ' + d + '위, 전체 ' + a + '위',
+      runFlagged: '사람의 한계를 넘는 기록이라 순위에는 올리지 않았습니다.',
+      runFailed: '기록을 올리지 못했습니다.',
+      runOffline: '기록 도전은 연결이 필요합니다. 연습은 그대로 됩니다.',
+
+      name: '이름', createRoom: '방 만들기', join: '입장',
+      roomNote: '방에 있는 모두에게 같은 목표가 주어지고 동시에 시작합니다. 목표에 가장 가까이 멈춘 사람이 그 라운드를 이깁니다.',
+      copyLink: '링크 복사', copied: '복사됨',
+      roomConnecting: '연결 중',
+      roomLost: '연결이 끊겼습니다. 새로고침하면 다시 들어갑니다.',
+      roomFull: '방이 가득 찼습니다.',
+      roomBadCode: '방 코드는 네 글자입니다.',
+      roomOffline: '지금은 방을 쓸 수 없습니다.',
+      roomMeta: (n, r) => n + '명' + (r ? ' · ' + r + '라운드' : ''),
+      startRound: '라운드 시작', waitHost: '방장을 기다리는 중',
+      waitOthers: '다른 사람을 기다리는 중', roomReady: '준비',
+      roomWin: who => who + ' 승',
+      roomTie: '동점', roomNobody: '아무도 시간 안에 멈추지 않았습니다',
+      dnf: '기록 없음'
     }
   };
 
@@ -450,19 +695,38 @@
     target:$('target'), unit:$('t-unit'), live:$('live'), verdict:$('verdict'), pad:$('pad'),
     rec:$('rec'), strip:$('strip'), empty:$('empty'), bias:$('bias'),
     count:$('s-count'), best:$('s-best'), avg:$('s-avg'), streak:$('s-streak'),
-    showTimer:$('show-timer'), reset:$('reset'), lang:$('lang')
+    showTimer:$('show-timer'), reset:$('reset'), lang:$('lang'),
+
+    // 뷰 전환은 show()가 id 문자열로 다룬다(PANELS). 여기 담아 두면
+    // 두 곳에서 같은 목록을 들고 있게 된다.
+    modes:$('modes'),
+    runNick:$('run-nick'), runSubmit:$('run-submit'), runAgain:$('run-again'),
+    runResult:$('run-result'),
+    board:$('board'),
+    roomJoin:$('room-join'), roomLive:$('room-live'), nick:$('nick'),
+    roomCreate:$('room-create'), roomCodeIn:$('room-code-in'), roomEnter:$('room-enter'),
+    roomCodeOut:$('room-code-out'), roomCopy:$('room-copy'), roomMeta:$('room-meta'),
+    roster:$('roster'), roomBoard:$('room-board'), roomNote:$('room-note')
   };
   // i18n 키 -> 그 문구를 그대로 넣을 엘리먼트 id
   const LABELS = {
     instrument:'t-instrument', kicker:'t-kicker', log:'t-log', scale:'t-scale',
     early:'t-early', late:'t-late', empty:'empty', attempts:'t-attempts',
     best:'t-best', avg:'t-avg', streak:'t-streak', showTimer:'t-showTimer',
-    aboutTitle:'t-about-title', aboutCopy:'t-about-copy'
+    aboutTitle:'t-about-title', aboutCopy:'t-about-copy',
+    mPractice:'m-practice', mRanked:'m-ranked', mRoom:'m-room', mRanks:'m-ranks',
+    today:'b-today', allTime:'b-all', ranksNote:'t-ranks-note',
+    runName:'t-run-name', runSubmit:'run-submit',
+    name:'t-name', createRoom:'room-create', join:'room-enter',
+    roomNote:'t-room-note', copyLink:'room-copy'
   };
 
   let lang = 'en', T = I18N.en;
   let target = 0, startedAt = 0, state = 'idle', raf = 0;
   let results = [], streak = 0, total = 0, best = null;
+  // 화면 모드. state('idle'/'running'/'locked')와는 다른 축이다 —
+  // 어느 모드에 있든 게임 자체의 상태 전이는 똑같이 돈다.
+  let mode = 'practice', run = null, room = null, boardScope = 'today';
   // 마지막 판정을 숫자로 들고 있는다. 언어를 바꿔도 문구만 다시 그리면 된다.
   let lastVerdict = null;
 
@@ -502,22 +766,46 @@
     el.unit.textContent = T.unit;
     el.lang.textContent = T.langButton;
     el.reset.textContent = T.clear;
-    el.pad.textContent = state === 'running' ? T.stop
-                       : state === 'locked'  ? T.next : T.start;
+    el.runAgain.textContent = T.mPractice;
+    el.nick.placeholder = el.runNick.placeholder = T.name;
+    el.pad.textContent = padLabel();
     if (state === 'running') el.live.textContent = T.measuring;
     drawVerdict();
     render();
+    renderMode();
+  }
+
+  function padLabel(){
+    if (mode === 'room') return roomPadLabel();
+    return state === 'running' ? T.stop
+         : state === 'locked'  ? T.next : T.start;
   }
 
   // ── 게임 ────────────────────────────────
+  function setTarget(n){
+    target = n;
+    el.target.textContent = String(target);
+    el.target.appendChild(el.unit);   // 단위 span은 재사용한다
+  }
+
+  // 방에서 라운드 사이. 목표는 서버가 라운드를 열 때 정하므로, 그 전에
+  // 숫자가 떠 있으면 그게 다음 목표인 줄 안다.
+  function blankTarget(){
+    el.target.textContent = '—';
+    el.target.appendChild(el.unit);
+  }
+
   function newTarget(){
+    // 기록 도전은 목표를 서버가 미리 서명해 내려준 순서대로 쓴다. 방은
+    // 라운드마다 서버가 정한다. 스스로 뽑는 건 연습뿐이다.
+    if (mode === 'ranked' && run && run.i < run.targets.length)
+      return setTarget(run.targets[run.i]);
+
     let t;
     do {
       t = MIN_TARGET + Math.floor(Math.random() * (MAX_TARGET - MIN_TARGET + 1));
     } while (t === target);
-    target = t;
-    el.target.textContent = String(target);
-    el.target.appendChild(el.unit);   // 단위 span은 재사용한다
+    setTarget(t);
   }
 
   function gradeIndex(abs){
@@ -567,8 +855,9 @@
   function toIdle(){
     state = 'idle';
     el.pad.disabled = false;
-    el.pad.textContent = T.start;
+    el.pad.textContent = padLabel();
     el.rec.classList.remove('live');
+    el.live.className = 'live';
     el.live.textContent = '';
     lastVerdict = null;
     hint(T.pressStart);
@@ -605,6 +894,7 @@
     lastVerdict = {err: err, abs: abs};
     drawVerdict();
 
+    // 어느 모드든 기록계에는 남는다 — 방에서 친 것도 내가 친 것이다.
     results.push(err);
     if (results.length > KEEP) results = results.slice(-KEEP);
     total += 1;
@@ -613,6 +903,9 @@
     save();
     draw();
     render();
+
+    if (mode === 'room') return roomStopped(elapsed);
+    if (mode === 'ranked') return runRecord(elapsed);
 
     setTimeout(function(){
       if (state !== 'locked') return;
@@ -652,7 +945,8 @@
 
   function render(){
     el.count.textContent = total;
-    el.streak.textContent = streak;
+    // 기록 도전 중이면 이 칸은 진행률을 들고 있다. renderMode가 채운다.
+    if (!(mode === 'ranked' && run)) el.streak.textContent = streak;
 
     if (!results.length){
       el.best.textContent = el.avg.textContent = '—';
@@ -669,15 +963,522 @@
       : T.bias(Math.abs(mean).toFixed(2), mean > 0);
   }
 
+  // ── 신원 ────────────────────────────────
+  // 로그인은 없다. 틱톡에서 흘러들어온 사람에게 로그인 화면은 이탈
+  // 지점이다. 기기에 UUID 하나를 만들어 두고 이름만 받는다. 서버에는
+  // 그 UUID를 다시 해시한 값만 남는다(src/lib/ids.js).
+  const ME_KEY = 'offby/me';
+  let meCache = null;
+
+  function uuid(){
+    try { if (self.crypto && self.crypto.randomUUID) return self.crypto.randomUUID(); }
+    catch (e) { /* 아래로 */ }
+    return 'p-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  function me(){
+    if (meCache) return meCache;
+    let m = null;
+    try { m = JSON.parse(localStorage.getItem(ME_KEY) || 'null'); } catch (e) { /* 무시 */ }
+    if (!m || typeof m.id !== 'string') m = { id: uuid(), name: '' };
+    meCache = m;
+    return m;
+  }
+
+  function saveMe(name){
+    const m = me();
+    if (typeof name === 'string') m.name = name;
+    try { localStorage.setItem(ME_KEY, JSON.stringify(m)); } catch (e) { /* 무시 */ }
+  }
+
+  // ── API ─────────────────────────────────
+  // fetch가 없는 환경(테스트용 jsdom 등)에서도 게임은 돌아야 한다.
+  // 연습 모드는 서버를 한 번도 안 부른다.
+  async function api(path, body){
+    if (typeof fetch !== 'function') throw new Error('offline');
+    const res = await fetch(path, body ? {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body)
+    } : undefined);
+    if (!res.ok){
+      const err = new Error('http ' + res.status);
+      err.status = res.status;
+      throw err;
+    }
+    return res.json();
+  }
+
+  // ── 모드 ────────────────────────────────
+  const PANELS = ['readout', 'pad', 'strip-wrap', 'stats', 'panel-run', 'panel-ranks', 'panel-room'];
+
+  function show(ids){
+    for (const id of PANELS) $(id).hidden = ids.indexOf(id) < 0;
+  }
+
+  function renderMode(){
+    for (const b of el.modes.children)
+      b.setAttribute('aria-selected', String(b.getAttribute('data-mode') === mode));
+
+    if (mode === 'ranks')       show(['panel-ranks']);
+    else if (mode === 'room')   show(room && room.joined ? ['readout', 'pad', 'panel-room'] : ['panel-room']);
+    else if (mode === 'ranked') show(run && run.done
+                                  ? ['panel-run', 'strip-wrap', 'stats']
+                                  : ['readout', 'pad', 'strip-wrap', 'stats']);
+    else                        show(['readout', 'pad', 'strip-wrap', 'stats']);
+
+    // 기록 도전 중에는 연속 적중보다 몇 회째인지가 알고 싶은 정보다.
+    if (mode === 'ranked' && run){
+      $('t-streak').textContent = T.progress;
+      el.streak.textContent = run.i + '/' + run.targets.length;
+    } else {
+      $('t-streak').textContent = T.streak;
+      el.streak.textContent = streak;
+    }
+  }
+
+  function setMode(next){
+    if (next === mode) return;
+
+    // 방을 떠나면 자리를 비워 준다. 안 그러면 남은 사람들이 나를
+    // 기다리느라 라운드가 안 끝난다.
+    if (mode === 'room' && next !== 'room') roomLeave();
+
+    mode = next;
+    cancelAnimationFrame(raf);
+    run = mode === 'ranked' ? run : null;
+
+    if (mode === 'ranked' && !run) return runBegin();
+    if (mode === 'ranks') loadBoard(boardScope);
+    if (mode === 'room' && !room) el.nick.value = me().name;
+
+    if (mode === 'practice' || (mode === 'ranked' && run && !run.done)){
+      newTarget();
+      toIdle();
+    }
+    renderMode();
+  }
+
+  // ── 기록 도전 ───────────────────────────
+  async function runBegin(){
+    run = { targets: [], attempts: [], i: 0, done: false, meta: null };
+    hint(T.boardLoading);
+    try {
+      const r = await api('/api/run/start', { playerId: me().id });
+      if (mode !== 'ranked') return;              // 그새 다른 탭으로 갔다
+      run.targets = r.targets;
+      run.meta = r;
+      setTarget(run.targets[0]);
+      toIdle();
+      renderMode();
+    } catch (e) {
+      run = null;
+      mode = 'practice';
+      newTarget();
+      toIdle();
+      hint(T.runOffline);
+      renderMode();
+    }
+  }
+
+  function runRecord(elapsed){
+    run.attempts.push({ target: target, elapsed: elapsed });
+    run.i += 1;
+    renderMode();
+
+    setTimeout(function(){
+      if (mode !== 'ranked' || !run) return;
+      if (run.i < run.targets.length){
+        setTarget(run.targets[run.i]);
+        toIdle();
+        renderMode();
+        return;
+      }
+      run.done = true;
+      el.runNick.value = me().name;
+      el.runResult.textContent = T.runAvg(fmt(runAvg()));
+      el.runSubmit.disabled = false;
+      renderMode();
+      el.runNick.focus();
+    }, LOCKOUT);
+  }
+
+  function runAvg(){
+    const errs = run.attempts.map(a => Math.abs(a.elapsed - a.target));
+    return errs.reduce((a, b) => a + b, 0) / errs.length;
+  }
+
+  async function runSubmit(){
+    if (!run || !run.done) return;
+    saveMe(el.runNick.value.trim());
+    el.runSubmit.disabled = true;
+    el.runResult.textContent = T.runSending;
+
+    try {
+      const r = await api('/api/run/finish', {
+        runId: run.meta.runId,
+        targets: run.meta.targets,
+        issuedAt: run.meta.issuedAt,
+        token: run.meta.token,
+        attempts: run.attempts,
+        playerId: me().id,
+        nickname: me().name
+      });
+      el.runResult.textContent = T.runAvg(fmt(r.avgError)) +
+        (r.flagged ? ' · ' + T.runFlagged
+                   : r.rank ? ' · ' + T.runRanked(r.rank.today, r.rank.all) : '');
+      run = null;
+    } catch (e) {
+      el.runResult.textContent = T.runFailed;
+      el.runSubmit.disabled = false;
+    }
+  }
+
+  // ── 순위표 ──────────────────────────────
+  // 표를 innerHTML로 만들지 않는다. 닉네임이 남이 넣은 문자열이라
+  // textContent로만 넣는다.
+  function table(cols, rows, empty){
+    const wrap = document.createDocumentFragment();
+    if (!rows.length){
+      const p = document.createElement('div');
+      p.className = 'none';
+      p.textContent = empty;
+      wrap.appendChild(p);
+      return wrap;
+    }
+    const t = document.createElement('table');
+    const head = document.createElement('tr');
+    for (const c of cols){
+      const th = document.createElement('th');
+      th.textContent = c.label;
+      if (c.cls) th.className = c.cls;
+      head.appendChild(th);
+    }
+    t.appendChild(head);
+    for (const r of rows){
+      const tr = document.createElement('tr');
+      if (r.cls) tr.className = r.cls;
+      for (const c of cols){
+        const td = document.createElement('td');
+        td.className = c.cls || '';
+        td.textContent = c.get(r);
+        tr.appendChild(td);
+      }
+      t.appendChild(tr);
+    }
+    wrap.appendChild(t);
+    return wrap;
+  }
+
+  function paint(node, frag){
+    node.textContent = '';
+    node.appendChild(frag);
+  }
+
+  function message(node, text){
+    const p = document.createElement('div');
+    p.className = 'none';
+    p.textContent = text;
+    node.textContent = '';
+    node.appendChild(p);
+  }
+
+  async function loadBoard(scope){
+    boardScope = scope;
+    $('b-today').setAttribute('aria-selected', String(scope === 'today'));
+    $('b-all').setAttribute('aria-selected', String(scope === 'all'));
+    message(el.board, T.boardLoading);
+
+    try {
+      const r = await api('/api/board?scope=' + scope);
+      if (boardScope !== scope || mode !== 'ranks') return;
+      const mine = me().name;
+      paint(el.board, table([
+        { label: T.colRank,   cls: 'n', get: r => String(r.rank) },
+        { label: T.colPlayer, cls: 'who', get: r => r.nickname },
+        { label: T.colAvg,    cls: 'v', get: r => fmt(r.avgError) + T.unit }
+      ], r.board.map(row => ({ ...row, cls: row.nickname === mine ? 'me' : '' })), T.boardEmpty));
+    } catch (e) {
+      message(el.board, T.boardOffline);
+    }
+  }
+
+  // ── 방 ──────────────────────────────────
+  function roomPadLabel(){
+    if (state === 'running') return T.stop;
+    if (!room || !room.joined) return T.start;
+    if (room.round) return T.roomReady;
+    return room.you === room.hostId ? T.startRound : T.waitHost;
+  }
+
+  function roomPress(){
+    if (!room || !room.joined) return;
+    if (state === 'running') return stop();
+    if (room.round) return;                       // 카운트다운 중
+    if (room.you !== room.hostId) return;         // 시작은 방장만
+    roomSend({ t: 'start' });
+    el.pad.disabled = true;
+  }
+
+  function roomSend(m){
+    try {
+      if (room && room.ws && room.ws.readyState === 1) room.ws.send(JSON.stringify(m));
+    } catch (e) { /* 끊긴 소켓 */ }
+  }
+
+  function roomLeave(){
+    if (!room) return;
+    roomSend({ t: 'bye' });
+    clearTimeout(room.timer);
+    try { room.ws.close(); } catch (e) { /* 무시 */ }
+    room = null;
+    el.roomJoin.hidden = false;
+    el.roomLive.hidden = true;
+    if (location.pathname.indexOf('/r/') === 0) history.replaceState(null, '', '/');
+  }
+
+  function roomOpen(code){
+    if (typeof WebSocket !== 'function') { el.roomNote.textContent = T.roomOffline; return; }
+
+    saveMe(el.nick.value.trim());
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let ws;
+    try {
+      ws = new WebSocket(proto + '//' + location.host + '/api/room/' + code + '/ws');
+    } catch (e) {
+      el.roomNote.textContent = T.roomOffline;
+      return;
+    }
+
+    room = { code: code, ws: ws, joined: false, you: null, hostId: null,
+             roster: [], round: null, done: {}, offset: 0, bestRtt: Infinity, timer: 0 };
+
+    el.roomJoin.hidden = true;
+    el.roomLive.hidden = false;
+    el.roomCodeOut.textContent = code;
+    el.roomNote.textContent = T.roomConnecting;
+    renderMode();
+
+    ws.onopen = function(){
+      roomSend({ t: 'hello', id: me().id, name: me().name });
+      // 시계 보정. 다섯 번 던져서 왕복이 가장 짧았던 것만 쓴다 — 큐에
+      // 걸린 샘플은 편도 지연 추정이 크게 어긋난다.
+      //
+      // 정밀할 필요는 없다. 각자의 오차는 자기 기기의 performance.now()
+      // 차이로 재므로 시계가 어긋나도 점수는 공정하다. 이건 순전히
+      // 카운트다운을 같이 보기 위한 것이라 ±50ms면 충분하다.
+      for (let i = 0; i < 5; i++) roomSend({ t: 'ping', c: Date.now() });
+    };
+
+    ws.onmessage = function(e){
+      let m;
+      try { m = JSON.parse(e.data); } catch (err) { return; }
+      roomMessage(m);
+    };
+
+    ws.onclose = function(){
+      if (!room) return;
+      el.roomNote.textContent = T.roomLost;
+      room.joined = false;
+      el.pad.disabled = true;
+    };
+  }
+
+  function roomMessage(m){
+    if (!room) return;
+
+    if (m.t === 'pong'){
+      const rtt = Date.now() - m.c;
+      if (rtt < room.bestRtt){
+        room.bestRtt = rtt;
+        room.offset = m.s - (m.c + rtt / 2);   // 서버시각 − 내 시각
+      }
+      return;
+    }
+
+    if (m.t === 'welcome'){
+      room.joined = true;
+      room.you = m.you;
+      el.roomNote.textContent = '';
+      roomRoster(m);
+      if (m.round) roomRound(m.round);
+      else { blankTarget(); state = 'idle'; el.pad.disabled = false; el.pad.textContent = padLabel(); }
+      renderMode();
+      return;
+    }
+
+    if (m.t === 'roster'){ roomRoster(m); return; }
+
+    if (m.t === 'round'){ roomRound(m); return; }
+
+    if (m.t === 'submitted'){ room.done[m.id] = true; roomRoster(room); return; }
+
+    if (m.t === 'result'){ roomResult(m); return; }
+
+    if (m.t === 'error'){
+      el.roomNote.textContent = m.reason === 'full' ? T.roomFull : T.roomOffline;
+      return;
+    }
+  }
+
+  function roomRoster(m){
+    if (m.roster) room.roster = m.roster;
+    if (m.hostId !== undefined) room.hostId = m.hostId;
+    if (m.roundNo !== undefined) room.roundNo = m.roundNo;
+
+    el.roster.textContent = '';
+    for (const p of room.roster){
+      const li = document.createElement('li');
+      if (p.id === room.you) li.className = 'self';
+      if (room.done[p.id]) li.className += ' done';
+
+      const name = document.createElement('span');
+      if (p.id === room.hostId) name.className = 'host';
+      name.textContent = p.name;
+
+      const pts = document.createElement('span');
+      pts.className = 'pts';
+      pts.textContent = p.points;
+
+      li.append(name, pts);
+      el.roster.appendChild(li);
+    }
+    el.roomMeta.textContent = T.roomMeta(room.roster.length, room.roundNo);
+    el.pad.textContent = padLabel();
+  }
+
+  function roomRound(r){
+    room.round = r;
+    room.done = {};
+    roomRoster(room);
+    setTarget(r.target);
+    paint(el.roomBoard, document.createDocumentFragment());
+    el.roomNote.textContent = '';
+
+    state = 'idle';
+    el.pad.disabled = true;
+    el.pad.textContent = T.roomReady;
+    lastVerdict = null;
+    hint(T.roomReady);   // 아직 누를 때가 아니다. start()가 문구를 넘겨받는다
+
+    // 서버가 잡아 준 시각을 내 시계로 옮겨 센다.
+    const startsAt = r.startAt - room.offset;
+    clearTimeout(room.timer);
+
+    (function tick(){
+      if (!room || !room.round) return;
+      const left = startsAt - Date.now();
+      if (left <= 0){
+        el.live.className = 'live';
+        el.pad.disabled = false;
+        start();                       // 여기서부터 내 기기가 시간을 잰다
+        return;
+      }
+      el.live.className = 'live count';
+      el.live.textContent = String(Math.ceil(left / 1000));
+      room.timer = setTimeout(tick, Math.min(120, left));
+    })();
+  }
+
+  function roomStopped(elapsed){
+    roomSend({ t: 'stop', roundId: room.round.roundId, elapsed: elapsed });
+    room.done[room.you] = true;
+    roomRoster(room);
+    el.pad.disabled = true;
+    el.pad.textContent = T.waitOthers;
+  }
+
+  function roomResult(m){
+    room.round = null;
+    room.done = {};
+    clearTimeout(room.timer);
+    roomRoster(m);
+
+    paint(el.roomBoard, table([
+      { label: T.colRank,  cls: 'n',   get: r => r.dnf ? '—' : String(r.rank) },
+      { label: T.colPlayer, cls: 'who', get: r => r.name },
+      { label: T.colRound, cls: 'v',   get: r => r.dnf ? T.dnf
+                                        : (r.error >= 0 ? '+' : '−') + fmt(Math.abs(r.error)) + T.unit }
+    ], m.standings.map(r => ({
+      ...r,
+      cls: (r.id === room.you ? 'me ' : '') + (r.rank === 1 ? 'win' : '')
+    })), T.roomNobody));
+
+    const winners = m.standings.filter(r => r.rank === 1);
+    el.roomNote.textContent = !winners.length ? T.roomNobody
+      : winners.length > 1 ? T.roomTie
+      : T.roomWin(winners[0].name);
+
+    blankTarget();
+
+    // 끝내 안 누른 사람은 아직 running이다. 그대로 두면 '측정 중'이
+    // 얼어붙은 채 남는다.
+    if (state === 'running'){
+      cancelAnimationFrame(raf);
+      el.live.textContent = '';
+      hint(T.roomReady);
+    }
+    state = 'idle';
+    el.pad.disabled = false;
+    el.pad.textContent = padLabel();
+  }
+
+  async function roomCreate(){
+    el.roomCreate.disabled = true;
+    try {
+      const r = await api('/api/room', {});
+      history.replaceState(null, '', '/r/' + r.code);
+      roomOpen(r.code);
+    } catch (e) {
+      el.roomNote.textContent = T.roomOffline;
+      el.roomJoin.hidden = false;
+    }
+    el.roomCreate.disabled = false;
+  }
+
+  function roomJoinTyped(){
+    const code = el.roomCodeIn.value.trim().toUpperCase();
+    if (code.length !== 4){ el.roomNote.textContent = T.roomBadCode; return; }
+    history.replaceState(null, '', '/r/' + code);
+    roomOpen(code);
+  }
+
   function press(){
+    if (mode === 'room') return roomPress();
     if (state === 'idle') start();
     else if (state === 'running') stop();
   }
 
   el.pad.addEventListener('click', press);
 
+  el.modes.addEventListener('click', function(e){
+    const b = e.target.closest ? e.target.closest('.mode') : null;
+    if (b) setMode(b.getAttribute('data-mode'));
+  });
+
+  el.runSubmit.addEventListener('click', runSubmit);
+  el.runAgain.addEventListener('click', function(){ run = null; setMode('practice'); });
+  $('b-today').addEventListener('click', function(){ loadBoard('today'); });
+  $('b-all').addEventListener('click', function(){ loadBoard('all'); });
+
+  el.roomCreate.addEventListener('click', roomCreate);
+  el.roomEnter.addEventListener('click', roomJoinTyped);
+  el.roomCodeIn.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') roomJoinTyped();
+  });
+  el.roomCopy.addEventListener('click', async function(){
+    try {
+      await navigator.clipboard.writeText(location.origin + '/r/' + room.code);
+      el.roomCopy.textContent = T.copied;
+      setTimeout(function(){ el.roomCopy.textContent = T.copyLink; }, 1400);
+    } catch (e) { /* 클립보드를 막아 둔 브라우저 */ }
+  });
+
   document.addEventListener('keydown', function(e){
     if (e.code !== 'Space' && e.key !== ' ') return;
+    // 이름이나 방 코드를 치는 중이면 스페이스는 글자다.
+    const tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     e.preventDefault();
     if (e.repeat) return;
     press();
@@ -709,6 +1510,22 @@
   toIdle();
   draw();
   render();
+
+  // 공유받은 방 링크(/r/ABCD)로 들어온 경우. 워커가 이 경로에도
+  // index.html을 내주고 noindex를 붙인다(src/worker.js).
+  const link = location.pathname.match(/^\/r\/([A-Za-z0-9]{4})\/?$/);
+  if (link){
+    mode = 'room';
+    el.nick.value = me().name;
+    el.roomCodeIn.value = link[1].toUpperCase();
+    renderMode();
+    // 이름을 이미 정해 둔 사람은 바로 들여보낸다. 처음 온 사람에게는
+    // 코드를 채운 입장 폼을 보여 준다 — 이름 없이 들어가면 순위표에
+    // 'anon'만 늘어선다.
+    if (me().name) roomOpen(link[1].toUpperCase());
+  } else {
+    renderMode();
+  }
 })();
 </script>
 </body>

@@ -1,16 +1,54 @@
 {
-  // Cloudflare Workers 정적 자산 배포.
+  // Cloudflare Workers 배포.
   //
-  // main(워커 스크립트)이 없으면 자산만 서빙하는 워커가 된다. 지금은 그게
-  // 전부라 코드가 한 줄도 필요 없다. 나중에 리더보드 같은 API가 필요해지면
-  // main을 추가하고 /api/* 만 코드로 처리하면 된다 — 정적 자산은 그대로
-  // 엣지에서 나가고 API 요청만 워커를 탄다.
+  // 정적 자산이 여전히 주인공이다. 워커 코드가 잡는 건 /api/*와 방
+  // URL(/r/*)뿐이고, 나머지 요청은 src/worker.js가 env.ASSETS로 그대로
+  // 넘겨서 엣지에서 나간다.
   //
-  // Pages 대신 Workers를 쓰는 이유: Cloudflare가 둘을 Workers로 통합하는
-  // 중이고, 위처럼 나중에 API를 붙일 때 구조를 바꿀 필요가 없다.
+  // Pages 대신 Workers를 쓴 이유가 여기서 드러난다 — 리더보드와 방을
+  // 붙이면서 정적 사이트 구조를 하나도 안 바꿨다.
   "name": "timing-game",
   "compatibility_date": "2026-08-01",
+  "main": "src/worker.js",
+
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    // 워커가 자산을 직접 꺼낼 수 있어야 한다. /r/ABCD에 index.html을
+    // 내주면서 noindex 헤더를 붙이는 데 쓴다.
+    "binding": "ASSETS"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "offby",
+      // npx wrangler d1 create offby 로 만들고 그 id를 여기 적는다.
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+
+  // 방 하나가 Durable Object 하나다. 이름이 곧 방 코드(src/room.js).
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOM", "class_name": "Room" }
+    ]
+  },
+
+  // new_sqlite_classes 로 만든다. SQLite 백엔드 DO는 무료 플랜에 포함되고
+  // (기존 KV 백엔드는 유료 전용) 저장 요금도 무료 플랜엔 붙지 않는다.
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Room"] }
+  ],
+
+  // 보관 기간이 지난 런을 하루 한 번 정리한다(src/lib/board.js prune).
+  "triggers": {
+    "crons": ["17 4 * * *"]
+  },
+
+  "observability": {
+    "enabled": true
   }
+
+  // 시크릿은 여기 두지 않는다:
+  //   npx wrangler secret put RUN_SECRET
 }
