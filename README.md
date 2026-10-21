@@ -239,3 +239,7 @@ wrangler 4는 Node 22 이상을 요구한다. `.node-version`으로 빌드 환�
 - 방 성적은 아직 글로벌 순위와 분리돼 있다. 친구끼리 짜고 치는 경로를
   막으려는 것인데, 방 쪽이 서버가 라운드를 열어 검증이 더 강하다는 점에서
   다시 볼 여지가 있다.
+
+## 라이선스
+
+코드는 [MIT](LICENSE)다. `public/fonts/`의 폰트는 각자의 SIL Open Font License를 따른다.
